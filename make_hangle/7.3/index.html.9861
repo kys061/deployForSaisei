@@ -1,0 +1,710 @@
+<!DOCTYPE html> 
+<html> 
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+	<link href="/files/favicon.ico" rel="icon" type="image/x-icon">
+	<link href="/files/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
+	<link href="/files/elfinder/css/elfinder.min.css" type="text/css" rel="stylesheet">
+	<link href="/files/css/jquery.dataTables.css" rel="stylesheet" type="text/css" >
+	<link href="/files/css/dataTables.tableTools.css" rel="stylesheet" type="text/css">
+	<link href="/files/css/colReorder.jqueryui.css" rel="stylesheet" type="text/css">
+	<link href="/files/css/jquery.steps.css" rel="stylesheet" type="text/css">
+	<link href="/files/css/object.css" rel="stylesheet" type="text/css">
+	<link href="/files/css/layout.css" rel="stylesheet" type="text/css">
+	
+	<title>Saisei Traffic Manager</title>
+
+</head>
+<body>
+
+<div id="page-loading" class="oscillate">Starting...</div>
+
+	<div id="wizard" class="hidden">
+		<form id="wizard-form" action="#">
+			<h3>Introduction</h3>
+			<fieldset class="wizard">
+				<legend class="wizard">Introduction</legend>
+				<p>It looks like this is the first time this STM system has been
+					used.</p>
+				<p>We recommend you use this wizard to perform some basic
+					configuration. The wizard will restart STM for the changes
+					you make to take effect.</p>
+				<p>Click &lsquo;Next&rsquo; to continue, or click &lsquo;Cancel&rsquo; to abandon the
+					wizard and configure STM manually.</p>
+			</fieldset>
+
+			<h3>Identification</h3>
+			<fieldset class="wizard">
+				<legend class="wizard">System Identification</legend>
+				<label for="system_name">System Name<sup>&lowast;</sup></label> <input
+					id="system_name" name="running-system_name" type="text"
+					class="required" value=""><br/>
+				<label for="system_banner">System Banner</label> <input
+					id="system_banner" name="running-system_banner" type="text"
+					title="Text to be displayed on the Web Interface banner. Defaults to 'Traffic Manager on <System Name>'"><br/>
+				<label
+					for="customer_name">Customer name<sup>&lowast;</sup></label> <input
+					id="customer_name" name="running-customer_name" type="text"
+					class="required" title="Corporation name or email address"><br />
+				<label for="location"><p>You
+					may specify the geolocation of this STM instance. This
+					can be anything Google Maps can understand. For example, the name of a
+					town, a street address, or map coordinates.</p>Location</label>
+					<input id="location" name="running-location" type="text"><br />
+				<p style="position: absolute; bottom: 0; margin-left: 20em;"><sup>&lowast;</sup> Mandatory</p>
+			</fieldset>
+
+			<h3>Accessing STM</h3>
+			<fieldset class="wizard">
+				<legend class="wizard">Accessing STM</legend>
+				<p>Do you wish to change your STM system&rsquo;s IP address? 
+				This is the address at which the STM system is accessed 
+				from a web browser for management purposes. </p>
+				<p>The current details are shown below. Modify them to
+				suit your needs.</p>
+				<table>
+					<tr>
+						<td><label for="pci_address" style="margin-top: 0">PCI
+								Address:</label></td>
+						<td><input id="pci_address" style="margin-bottom: 0.5em"
+							name="running/management_interfaces/mgmt0-pci_address"
+							type="text" disabled></td>
+					</tr>
+					<tr>
+						<td><label for="mac_address" style="margin-top: 0">MAC Address:</label></td>
+						<td><input id="mac_address" style="margin-bottom: 0.5em"
+							name="running/management_interfaces/mgmt0-mac_address"
+							type="text" disabled></td>
+					</tr>
+					<tr>
+						<td><label for="ip_address" style="margin-top: 0">Current IP Address:&nbsp;</label></td>
+						<td><input id="ip_address" style="margin-bottom: 0.5em"
+							name="running/management_interfaces/mgmt0-ip_address" type="text"
+							disabled></td>
+					</tr>
+					<tr>
+						<td colspan=2 align="center">
+							<label><input class="static-or-dhcp" type="radio" name="running/management_interfaces/mgmt0-conf_static" value="T" style="display:inline">Use Static</label>
+							<label><input class="static-or-dhcp" type="radio" name="running/management_interfaces/mgmt0-conf_static" value="F" style="display:inline">Use DHCP</label>
+						</td>
+					</tr>
+					<tr class="static-only">
+						<td><label for="conf_ip_address" style="margin-top: 0">Static IP
+								Address:<sup>&lowast;</sup></label></td>
+						<td><input id="conf_ip_address" style="margin-bottom: 0.5em"
+							name="running/management_interfaces/mgmt0-conf_ip_address"
+							type="text" disabled required></td>
+					</tr>
+					<tr class="static-only">
+						<td><label for="conf_default_gw"  style="margin-top: 0">Default
+								Gateway Address:<sup>&lowast;</sup></label></td>
+						<td><input id="conf_default_gw" style="margin-bottom: 0.5em"
+							name="running/management_interfaces/mgmt0-conf_default_gw"
+							type="text" disabled required></td>
+					</tr>
+					<tr class="static-only">
+						<td><label for="dns_servers" style="margin-top: 0">
+								DNS Servers:<sup>&lowast;</sup>
+						</label></td>
+						<td><input id="dns_servers" style="margin-bottom: 0.5em"
+							name="running-dns_servers" type="text" disabled required></td>
+					</tr>
+					<tr>
+						<td><label for="allowed_subnets" style="margin-top: 0">Allowed
+								Subnets:<sup>&lowast;</sup></label></td>
+						<td><input id="allowed_subnets" style="margin-bottom: 0.5em"
+							name="running/management_interfaces/mgmt0-allowed_subnets"
+							type="text" required></td>
+					</tr>
+				</table>
+				<p style="position: absolute; bottom: 0; margin-left: 20em;"><sup>&lowast;</sup> Mandatory</p>
+			</fieldset>
+
+			<h3>Passwords</h3>
+			<fieldset class="wizard">
+				<legend class="wizard">System Passwords</legend>
+				<p>Guessing passwords is one of the most common ways of obtaining unauthorized
+				access to a system. Simple and commonly used passwords enable intruders to easily
+				gain access and control.</p>
+				<p>Passwords must contain at least one each of: an uppercase letter,
+				a lowercase letter, a digit, and a punctuation character.</p>
+				<p>Protect your STM system by choosing strong passwords</p>
+				<input type="text" value="admin" style="display:none">
+				<label title="Password for the &lsquo;admin&rsquo; account used for access using the CLI or from a browser."
+					for="password">Password for &lsquo;admin&rsquo; Account<sup>&lowast;</sup></label>
+				<input id="password" name="running/administrators/admin-password"
+					type="password" minlength="8" maxlength="255" class="required" value="" placeholder="New password"><br />
+				<input id="password2" name="gui-password2" type="password" placeholder="Re-enter new password"><br />
+				<label title="Password for SSH access using the &lsquo;saisei&rsquo; account."
+					for="system_password">System Password<sup>&lowast;</sup></label>
+				<input id="system_password" name="running-system_password" type="password"
+					minlength="8" maxlength="255" class="required" value="" placeholder="New password"><br />
+				<input id="system_password2" name="gui-system_password2" type="password"
+					placeholder="Re-enter new password"><br />
+				<p style="position: absolute; bottom: 0; margin-left: 20em;">
+					<sup>&lowast;</sup> Mandatory
+				</p>
+			</fieldset>
+
+			<h3>BITW</h3>
+			<fieldset class="wizard">
+				<legend class="wizard">Bump&hyphen;in&hyphen;the&hyphen;wire</legend>
+				<p>STM operates as a &lsquo;bump&hyphen;in&hyphen;the&hyphen;wire&rsquo; (BITW). 
+				To create a bump, you &lsquo;connect&rsquo; two interfaces. 
+				Traffic arriving on one interface of the pair is processed by
+				STM and forwarded via the other interface.</p>
+				<label for="external1">External Interface<sup>&lowast;</sup></label><br/>
+				<input id="external1_description" name="gui-external1_description" type="text"
+					placeholder="Optional description" size=30><br/>
+				<select id="external1" name="gui-external1" class="required interface-select"
+					title="Choose an interface">
+				</select><br/>
+				<label for="internal1">Internal Interface<sup>&lowast;</sup></label><br/>
+				<input id="internal1_description" name="gui-internal1_description" type="text"
+					placeholder="Optional description" size=30><br/>
+				<select id="internal1" name="gui-internal1" class="required interface-select"
+					title="Choose an interface">
+				</select><br/>
+				<label for="bitw_rate1">Operating Speed (Mbit/s)<sup>&lowast;</sup></label>
+				<input id="bitw_rate1" name="gui-bitw_rate1" type="number"
+					step=any min=1 title="Specify the speed for this BITW in Mbit/s"
+					required>
+				<label for="span_port1"><p>If you are using the STM as a monitoring device, and it is
+				connected to a span port on a switch, select the option below so arriving traffic will
+				be discarded at the peer interface.</p>
+				Using Span Ports</label> <br/>
+				<input id="span_port1" name="gui-span_port1" type="checkbox">
+				<p style="position: absolute; bottom: 0; margin-left: 20em;"><sup>&lowast;</sup> Mandatory</p>
+			</fieldset>
+
+			<h3 class="optional-bitw">Second BITW</h3>
+			<fieldset class="wizard optional-bitw">
+				<legend class="wizard">Second Bump&hyphen;in&hyphen;the&hyphen;wire</legend>
+				<p>You may configure a second BITW if you
+				wish to use STM on more than one link.</p>
+				<input id="bitw2-configure" name="gui-bitw2_configure" type="checkbox">
+				<label for="bitw2-configure">Configure a second BITW</label><br/>
+				<label for="external2">External Interface<sup>&lowast;</sup></label><br/>
+				<input id="external2_description" name="gui-external2_description"
+					type="text" placeholder="Optional description" size=30 disabled><br />
+				<select id="external2" name="gui-external2" class="required interface-select"
+					title="Choose an interface" disabled>
+				</select><br/>
+				<label for="internal2">Internal Interface<sup>&lowast;</sup></label><br />
+				<input id="internal2_description" name="gui-internal2_description" type="text"
+					placeholder="Optional description" size=30 disabled><br/>
+				<select id="internal2" name="gui-internal2" class="required interface-select"
+					title="Choose an interface" disabled>
+				</select><br />
+				<label for="bitw_rate2">Operating Speed (Mbit/s)<sup>&lowast;</sup></label>
+				<input id="bitw_rate2" name="gui-bitw_rate2" type="number" step=any min=1
+					title="Specify the speed for this BITW in Mbit/s" required disabled>
+				<label for="span_port2"><p>If you are
+				using the STM as a monitoring device, and it is connected to a
+				span port on a switch, select the option below so arriving traffic
+				will be discarded at the peer interface.</p> Using Span Ports</label><br />
+				<input id="span_port2" name="gui-span_port2" type="checkbox" disabled>
+				<p style="position: absolute; bottom: 0; margin-left: 20em;"><sup>&lowast;</sup> Mandatory</p>
+			</fieldset>
+
+			<h3>Policies</h3>
+			<fieldset class="wizard">
+				<legend class="wizard">Built&hyphen;in Policies</legend>
+				<p>STM includes built&hyphen;in Policies for common traffic
+					classes (VoIP, Streaming Media, &hellip;). You can choose to use
+					these, or start with no Policies defined and create your own when
+					STM starts. If you start with Saisei&rsquo;s built&hyphen;in
+					Policies, you can modify, delete or add to them later.</p>
+				<label for="load_default_policies">Use Built&hyphen;in
+					Policies</label> <br /> <input id="load_default_policies"
+					name="gui-load_default_policies" type="checkbox" checked>
+			</fieldset>
+
+			<h3>Rate Plans</h3>
+			<fieldset class="wizard">
+				<legend class="wizard">Rate Plans</legend>
+				<p>Rate Plans allow you to define host&hyphen; and user&hyphen;specific
+				traffic policies with overall upstream and downstream rates based on
+				customer&hyphen;purchased bandwidth.</p>
+				<p>Do you wish to use Rate Plans to control your traffic?
+				If so, create a default Rate
+				Plan that will be used for internal hosts when no other Rate
+				Plan has been assigned. (You can create more Rate Plans once
+				the Wizard has finished.)
+				</p>
+				<label for="use_rate_plans">Use Rate Plans</label> <br/><input
+					id="use_rate_plans" name="gui-use_rate_plans" type="checkbox">
+				<br/>
+				<label for="default_rate_plan">Name for Default Rate Plan</label>
+					<input id="default_rate_plan" class="rate_plan" name="gui-default_rate_plan"
+					type="text" value="defaultPlan" disabled required><br/>
+				<label for="upstream_rate">Upstream Rate (kbit/s)</label> 
+					<input id="upstream_rate" class="rate_plan" name="gui-upstream_rate" type="text"
+					placeholder="E.g., 0.5g, or 500M"
+					title="Use suffix &lsquo;k&rsquo;,&lsquo;m&rsquo;, or &lsquo;g&rsquo;.
+If you don&rsquo;t specify a value, the Upstream Rate will be &lsquo;unlimited&rsquo;."
+					disabled><br/>
+				<label for="downstream_rate">Downstream Rate (kbit/s)</label>
+					<input id="downstream_rate" class="rate_plan" name="gui-downstream_rate" type="text"
+					placeholder="E.g., 1m, or 100k" 
+					title="Use suffix &lsquo;k&rsquo;,&lsquo;m&rsquo;, or &lsquo;g&rsquo;.
+If you don&rsquo;t specify a value, the Downstream Rate will be &lsquo;unlimited&rsquo;."
+					disabled>
+			</fieldset>
+
+			<h3>Completion</h3>
+			<fieldset class="wizard">
+				<legend class="wizard">Summary</legend>
+				<p>If you&rsquo;re happy with the choices below, click &lsquo;Finish&rsquo; to apply them.
+				If not, go back and make changes. To abandon the Wizard and configure
+				STM manually, click &lsquo;Cancel&rsquo;.</p>
+				<p style="color: orange; font-weight: bold;"> NOTE: when you click &lsquo;Finish&rsquo;,
+				you will be prompted to login again as &lsquo;admin&rsquo; using your new password.</p>
+				<div id="wizard-summary" style="overflow-y:auto;height:70%">--Summary of all the choices--</div>
+			</fieldset>
+		</form>
+	</div>
+<div id="universe">
+	<div id="outer-south" class="hidden">
+		<div class="hidden" id="update-warning"></div>
+		<div id="copyright"></div>
+		<div class="hidden" id="upgrade-available">A newer software version is available. Go to System/Upgrade to install.</div>
+	</div>
+
+	<div id="outer-center" class="hidden">
+	<div>
+	<UL id="tabbuttons" class="hidden">
+                <li class="tab0"><a href="#tab0" title="Shows a summary of the operation of the FlowCommand&#8482; system">대쉬보드</a></li>
+                <li class="tab6"><a href="#tab6" title="Set-up a Saisei Traffic Manager unit">시스템</a></li>
+                <li class="tab4"><a href="#tab4" title="Complete configuration and monitoring">플로우 커맨드&#8482;</a></li>
+                <li class="tab5"><a href="#tab5" title="Configure conditions and monitor alarms">알람</a></li>
+                <li class="tab2"><a href="#tab2" title="Manual and automatic report generation">리포트</a></li>
+                <li class="tab3"><a href="#tab3" title="Network trouble-shooting tools">진단</a></li>
+                <li class="tab1"><a href="#tab1" title="Explore and control via the map interface">맵뷰</a></li>
+	</UL>
+	<button id="save-config-button" class="hidden" style="float:right"></button>
+	</div>
+	<div id="tabpanels">
+
+		<div id="tab0" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content" style="overflow: visible">
+                                        플로우 커맨드&#8482;에서 요약하여 보여주는 대쉬보드 입니다.<span id="tab0-menu" style="float:right;"></span>
+				</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab0 --></div>
+			</div>
+			<div class="ui-layout-center">
+
+				<div class="ui-layout-center">
+					<!--Outer Center -->
+					<div class="ui-layout-center">
+						<!--Middle North-->
+						<div class="ui-layout-center stm-display" id='display12'>
+							<div class="toolbar" id="display12-toolbar"></div>
+							<div class="ui-layout-content">
+								<div class="canvas" id="display12-canvas">
+									<div class='chart' id='display12-chart'></div>
+									<span class='numeral invisible'>3</span>
+								</div>
+							</div>
+						</div>
+						<div class="ui-layout-west stm-display" id='display11'>
+							<div class="toolbar" id="display11-toolbar"></div>
+							<div class="ui-layout-content">
+								<div class="canvas" id="display11-canvas">
+									<div class='chart' id='display11-chart'></div>
+									<span class='numeral invisible'>2</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="ui-layout-south">
+						<!--Middle Center-->
+						<div class="ui-layout-center stm-display" id='display15'>
+							<div class="toolbar" id="display15-toolbar"></div>
+							<div class="ui-layout-content">
+								<div class="canvas" id="display15-canvas">
+									<div class='chart' id='display15-chart'></div>
+									<span class='numeral invisible'>6</span>
+								</div>
+							</div>
+						</div>
+						<div class="ui-layout-west stm-display" id='display14'>
+							<div class="toolbar" id="display14-toolbar"></div>
+							<div class="ui-layout-content">
+								<div class="canvas" id="display14-canvas">
+									<div class='chart' id='display14-chart'></div>
+									<span class='numeral invisible'>5</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="ui-layout-west">
+					<!--Outer West-->
+					<div class="ui-layout-center stm-display" id="display10">
+						<div class="toolbar" id="display10-toolbar"></div>
+						<div class="ui-layout-content">
+							<div class="canvas" id="display10-canvas">
+								<div class='chart' id='display10-chart'></div>
+								<span class='numeral invisible'>1</span>
+							</div>
+						</div>
+					</div>
+					<div class="ui-layout-south stm-display" id='display13'>
+						<div class="toolbar" id="display13-toolbar"></div>
+						<div class="ui-layout-content">
+							<div class="canvas" id="display13-canvas">
+								<div class='chart' id='display13-chart'></div>
+								<span class='numeral invisible'>4</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">Help</div>
+				<div id="tab0Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+					<p class="notes">This tab presents a dynamic overview of the system's operation. 
+					Each pane is updated on a regular interval.</p>
+					<p class="notes">Use the controls on each pane&rsquo;s toolbar to 
+					change the update interval. Click on a segment of a pie chart to &lsquo;drill down&rsquo;.</p>
+				</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+		</div><!-- /#tab0 -->
+
+		<div id="tab1" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+                                <div class="decorbar ui-layout-content">지도를 통해 STM과 HOST간의 연결을 확인 할 수 있습니다.</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content">
+					<!-- Statusbar - tab1 -->
+				</div>
+			</div>
+			<div id="map-image" class="ui-layout-center container" style="height:100%; width:100%"></div>
+				<div id="legend">
+					<h3>
+						<p>The Map UI is unavailable.</p>
+						<p>This is probably because your browser cannot access the
+							public Internet, so is unable to use the required mapping
+							resources.</p>
+						<p>If you wish to use the Map UI, first ensure your browser
+							can reach the public Internet, and then refresh the STM Web
+							Interface.</P>
+					</h3>
+				</div>
+				<div id="host_status">
+				</div>
+			</div><!-- /#tab1 -->
+
+		<div id="tab2" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content">
+                                        즉석/예약 리포트를 설정할 수 있습니다.
+				</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab2 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">Help</div>
+					<div id="tab2Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">Use this tab to obtain reports on the system&rsquo;s operation over a specified period.
+						Daily, weekly, and monthly reports are available.</p>
+						<p class="notes">Generate immediate reports from historical data and download them to 
+						your browser from where they may be displayed or printed.</p>
+						<p class="notes">Scheduled reports are automatically generated after the specified period 
+						has ended. The report is then emailed to one or more recipients. When configuring scheduled 
+						reports, remember to also configure a SMTP server which will be used to submit the 
+						reports for email delivery. </p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+			<div class="ui-layout-west"></div>
+			<div id="reportsTabs" class="ui-layout-center container tabs innertabs">
+				<ul>
+					<li class="tab0"><a href="#tab2-0">Immediate</a></li>
+					<li class="tab1"><a href="#tab2-1">Scheduled</a></li>
+				</ul>
+				<div class="ui-layout-content" style="border-top: 0;">
+					<div id="tab2-0" class="container pane-dialog" style="height: 100%;">
+					</div>
+					<div id="tab2-1" class="container pane-dialog stm-scrollable-pane" style="height: 100%;">
+					</div>
+				</div>
+			</div>
+		</div><!-- /#tab2 -->
+
+		<div id="tab3" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content">
+                                        네트워크 트러블 슈팅을 수행 할 수 있습니다.
+				</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab3 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">Help</div>
+					<div id="tab3Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">The Diagnostics tab gives access to the usual ping and traceroute 
+						tools running on the STM system, allowing you to determine the reachability of, and route 
+						to, a remote system.</p>
+						<p class="notes">It&rsquo;s also possible to capture copies of packets as they flow 
+						through the STM system for download and subsequent off-line analysis using tools such as 
+						<a target="_blank" href="https://www.wireshark.org">Wireshark</a>.</p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+			<div class="ui-layout-west"></div>
+			
+			<div id="diagnosticsTabs" class="ui-layout-center container tabs innertabs">
+				<UL>
+					<li class="tab0"><a href="#tab3-0">Ping</a></li>
+					<li class="tab1"><a href="#tab3-1">Traceroute</a></li>
+					<li class="tab2"><a href="#tab3-2">Packet Capture</a></li>
+				</UL>
+				<div class="ui-layout-content" style="border-top: 0;">
+					<div id="tab3-0" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab3-1" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab3-2" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+				</div>
+			</div>
+		</div><!-- /#tab3 -->
+		<div id="tab4" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content" style="overflow: visible">
+                                        플로우 커맨드&#8482;를 이용하여 다양한 차트로 활용 할 수 있습니다.<span id="tab4-menu" style="float:right;"></span>
+				</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab4 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">Help</div>
+					<div id="tab4Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">This tab is used to configure the FlowCommand&#8482; system and 
+						observe its operation through custom charts and tables. To become familiar with the 
+						controls and the techniques used, please read the <a class="start-guide-link" href="#">Start Guide</a>.</p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+			<div class="ui-layout-west">
+					<div id="accordion">
+						<h3>
+							Navigating <span class="focus-name"></span>
+						</h3>
+						<div id="nav"></div>
+						<h3>Saved Charts</h3>
+						<div id="fav"></div>
+					</div>
+				</div>
+			<div class="ui-layout-center">
+					<div class="ui-layout-center">
+						<div class="ui-layout-center stm-display" id='display0'>
+							<div class="toolbar" id="display0-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display0-canvas">
+								<div class='chart' id='display0-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span> <span
+									class='numeral invisible'>1</span>
+							</div>
+						</div>
+						<div class="ui-layout-east stm-display" id='display1'>
+							<div class="toolbar" id="display1-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display1-canvas">
+								<div class='chart' id='display1-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span>
+								<span class='numeral invisible'>2</span>
+							</div>
+						</div>
+					</div>
+					<div class="ui-layout-south">
+						<div class="ui-layout-west stm-display" id="display2">
+							<div class="toolbar" id="display2-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display2-canvas">
+								<div class='chart' id='display2-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span>
+								<span class='numeral invisible'>3</span>
+							</div>
+						</div>
+						<div class="ui-layout-center stm-display" id='display3'>
+							<div class="toolbar" id="display3-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display3-canvas">
+								<div class='chart' id='display3-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span> <span
+									class='numeral invisible'>4</span>
+							</div>
+						</div>
+						<div class="ui-layout-east stm-display" id='display4'>
+							<div class="toolbar" id="display4-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display4-canvas">
+								<div class='chart' id='display4-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span> <span
+									class='numeral invisible'>5</span>
+							</div>
+						</div>
+					</div>
+			</div>
+		</div><!-- /#tab4-->
+
+		<div id="tab5" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+                                <div class="decorbar ui-layout-content">컨디션과 알람을 설정하세요.</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab5 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">Help</div>
+					<div id="tab5Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">Use this tab to view and enable/disable the Conditions that 
+						will cause Alarms to be raised, and study any Alarms that have been raised. </p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+			<div class="ui-layout-west"></div>
+			<div id="alarmsTabs" class="ui-layout-center container tabs innertabs">
+				<UL>
+					<li class="tab0"><a href="#tab5-0">Alarms</a></li>
+					<li class="tab1"><a href="#tab5-1">Conditions</a></li>
+				</UL>
+				<div class="ui-layout-content" style="border-top: 0;">
+					<div id="tab5-0" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab5-1" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+				</div>
+			</div>
+		</div><!-- /#tab5 -->
+
+		<div id="tab6" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+                                <div class="decorbar ui-layout-content">STM의 유닛을 설정하세요.</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab6 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">Help</div>
+					<div id="tab6Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">Use the facilities under this tab to configure the underlying STM 
+						unit for operation in your network, or to Reload STM or to access its file system. 
+						</p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+			<div class="ui-layout-west"></div>
+			<div id="systemTabs" class="ui-layout-center container tabs innertabs">
+				<UL>
+                                        <li class="tab0"><a href="#tab6-0">일반</a></li>
+                                        <li class="tab1"><a href="#tab6-1">관리자</a></li>
+                                        <li class="tab2"><a href="#tab6-2">인터페이스</a></li>
+                                        <li class="tab3"><a href="#tab6-3">업그레이드</a></li>
+                                        <li class="tab4"><a href="#tab6-4">리로드</a></li>
+                                        <li class="tab6"><a href="#tab6-6">파일매니저</a></li>
+				</UL>
+				<div class="ui-layout-content" style="border-top: 0;">
+					<div id="tab6-0" class="container pane-dialog" style="height: 100%;"></div>
+					<div id="tab6-1" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab6-2" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab6-3" class="container pane-dialog" style="height: 100%;"></div>
+					<div id="tab6-4" class="container pane-dialog" style="height: 100%;"></div>
+					<div id="tab6-6" class="container pane-dialog" style="height: 100%;"></div>
+				</div>
+			</div>
+		</div>
+	</div><!-- /#tabpanels -->
+
+</div><!-- /#outer-center -->
+
+<!-- Last in the HTML, and overflow:visible, so dropdown menu overlays adjacent pane -->
+<div id="outer-north" style="overflow: visible;">
+	<div id="banner">
+		<span id="logo"> <a href="http://www.saisei.com/"
+			title="http://www.saisei.com/" target="_blank"> <img
+				src="/files/img/Saisei-logo-full-color-light-bg.png" alt="Saisei Networks" height="81"></a></span>
+		<div id="outer-strap"><span id="strap"></span></div>
+		<span id="global-menu" style="float:right;"></span>
+		<span id="focus-selector"></span>
+		<span id="global-search"></span>
+	</div>
+</div>
+
+</div>
+<!-- Finally, load the scripts -->
+	<script type="text/javascript" src="/files/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.layout-latest.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.layout.resizeTabLayout-latest.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.layout.resizePaneAccordions-latest.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.jstree.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.hotkeys.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.dataTables.min.js" charset="utf8"></script>
+	<script type="text/javascript" src="/files/jquery/dataTables.tableTools.min.js"></script>
+	<script type="text/javascript" src="/files/jquery/dataTables.colReorder.min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.i18n.properties-min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.validate.js"></script>
+	<script type="text/javascript" src="/files/highcharts/highstock.js"></script>
+	<script type="text/javascript" src="/files/highcharts/exporting.js"></script>
+	<script type="text/javascript" src="/files/highcharts/highcharts-more.js"></script>
+	<script type="text/javascript" src="/files/highcharts/no-data-to-display.js"></script>
+	<script type="text/javascript" src="/files/highcharts/HighchartsLegendExtension.js"></script>
+	<script type="text/javascript" src="/files/jquery/form2js.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.toObject.js"></script>
+	<script type="text/javascript" src="/files/moment.min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery-ui-timepicker-addon.js"></script>
+	<script type="text/javascript" src="/files/elfinder/js/elfinder.min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.steps.min.js"></script>
+	<script type="text/javascript" src="/files/common.js"></script>
+	<script type="text/javascript" src="/files/navigation.js"></script>
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB4l2EcvDX4ds4yLSQ0s2kqXEaSpzsc9Q4&callback=mapApiLoaded" async defer></script>
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js" async defer></script>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+{
+  "config": {
+    "common": {
+      "id": "admin",
+      "passwd": "FlowCommand#1",
+      "ip": "http://121.134.34.50:",
+      "port": "5000",
+      "metapath": "/rest/top/configurations/running",
+      "path": "/rest/:hostname/configurations/running/",
+      "class": "common"
+    },
+    "interface_rcv": {
+      "class": "interface",
+      "section": "interfaces/:int_name",
+      "attr": "receive_rate",
+      "operation": "raw",
+      "hist_point": "true"
+    },
+    "interface_trs": {
+      "class": "interface",
+      "section": "interfaces/:int_name",
+      "attr": "transmit_rate",
+      "operation": "raw",
+      "hist_point": "true"
+    },
+    "users_tr": {
+      "class": "users_tr",
+      "section": "users/",
+      "attr": "total_rate,dest_rate,source_rate,active_flows,packet_discard_rate,packets_discarded",
+      "order": "<total_rate",
+      "limit": "10",
+      "with": "total_rate>=0.01",
+      "operation": "auto"
+
+    },
+    "users_active_flows": {
+      "class": "users_active_flows",
+      "section": "users/",
+      "attr": "active_flows",
+      "order": "<total_rate",
+      "limit": "10",
+      "operation": "raw",
+      "hist_point": "true"
+    },
+    "users_packet_disc_rate": {
+      "class": "users_packet_disc_rate",
+      "section": "users/",
+      "attr": "packet_discard_rate",
+      "order": "<total_rate",
+      "limit": "10",
+      "operation": "raw",
+      "hist_point": "true"
+    },
+    "user_app": {
+      "class": "user_app",
+      "section": "users/:userID/applications/",
+      "attr": "total_rate",
+      "order": "<total_rate",
+      "limit": "5",
+      "with": "total_rate>=0.01"
+    },
+    "user_group_tr": {
+      "class": "user_group_tr",
+      "section": "user_groups/",
+      "attr": "name,source_rate,dest_rate,total_rate,active_flows,packet_discard_rate,packets_discarded,description",
+      "order": "<total_rate",
+      "limit": "100",
+      "operation": "auto"
+    },
+    "user_group_active_flows": {
+      "class": "user_group_active_flows",
+      "section": "user_groups/",
+      "attr": "active_flows",
+      "order": "<total_rate",
+      "limit": "50",
+      "operation": "raw",
+      "hist_point": "true"
+    },
+    "user_in_group_active_flows": {
+      "class": "user_in_group_active_flows",
+      "section": "/users/:user_name",
+      "attr": "active_flows",
+      "order": "<total_rate",
+      "limit": "50",
+      "operation": "raw",
+      "hist_point": "true"
+    },
+    "user_in_group_tr": {
+      "class": "user_in_group_tr",
+      "section": "user_groups/:user_group_name/users/",
+      "attr": "name,source_rate,dest_rate,total_rate,active_flows,packet_discard_rate,packets_discarded,description",
+      "order": "<total_rate",
+      "limit": "5",
+      "operation": "auto"
+    }
+  }
+}

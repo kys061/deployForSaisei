@@ -1,0 +1,450 @@
+<!DOCTYPE html> 
+<html> 
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+	<link href="/files/favicon.ico" rel="icon" type="image/x-icon">
+	<link href="/files/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
+	<link href="/files/elfinder/css/elfinder.min.css" type="text/css" rel="stylesheet">
+	<link href="/files/css/jquery.dataTables.css" rel="stylesheet" type="text/css" >
+	<link href="/files/css/dataTables.tableTools.css" rel="stylesheet" type="text/css">
+	<link href="/files/css/object.css" rel="stylesheet" type="text/css">
+	<link href="/files/css/layout.css" rel="stylesheet" type="text/css">
+	
+	<title>Saisei Traffic Manager</title>
+
+</head>
+<body>
+
+<div id="page-loading" class="oscillate">Starting...</div>
+
+<div id="outer-south" class="hidden">
+	<div class="hidden" id="update-warning"></div>
+	<div id="copyright"></div>
+</div>
+
+	<div id="outer-center" class="hidden">
+	<div>
+	<UL id="tabbuttons" class="hidden">
+		<li class="tab0"><a href="#tab0" title="Shows a summary of the operation of the FlowCommand&#8482; system">대쉬보드</a></li>
+		<!-- tab1 is spare -->
+		<li class="tab6"><a href="#tab6" title="Set-up a Saisei Traffic Manager unit">시스템</a></li>
+		<li class="tab4"><a href="#tab4" title="Complete configuration and monitoring">플로우 커맨드&#8482;</a></li>
+		<li class="tab5"><a href="#tab5" title="Configure conditions and monitor alarms">알람</a></li>
+		<li class="tab2"><a href="#tab2" title="Manual and automatic report generation">리포트</a></li>
+		<li class="tab3"><a href="#tab3" title="Network trouble-shooting tools">진단</a></li>
+	</UL>
+	<button id="save-config-button" class="hidden" style="float:right"></button>
+	</div>
+	<div id="tabpanels">
+
+		<div id="tab0" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content" style="overflow: visible">
+					플로우 커맨드&#8482;에서 요약하여 보여주는 대쉬보드입니다.<span id="tab0-menu" style="float:right;"></span>
+				</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab0 --></div>
+			</div>
+			<div class="ui-layout-center">
+
+				<div class="ui-layout-center">
+					<!--Outer Center -->
+					<div class="ui-layout-center">
+						<!--Middle North-->
+						<div class="ui-layout-center stm-display" id='display12'>
+							<div class="toolbar" id="display12-toolbar"></div>
+							<div class="ui-layout-content">
+								<div class="canvas" id="display12-canvas">
+									<div class='chart' id='display12-chart'></div>
+									<span class='numeral invisible'>3</span>
+								</div>
+							</div>
+						</div>
+						<div class="ui-layout-west stm-display" id='display11'>
+							<div class="toolbar" id="display11-toolbar"></div>
+							<div class="ui-layout-content">
+								<div class="canvas" id="display11-canvas">
+									<div class='chart' id='display11-chart'></div>
+									<span class='numeral invisible'>2</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="ui-layout-south">
+						<!--Middle Center-->
+						<div class="ui-layout-center stm-display" id='display15'>
+							<div class="toolbar" id="display15-toolbar"></div>
+							<div class="ui-layout-content">
+								<div class="canvas" id="display15-canvas">
+									<div class='chart' id='display15-chart'></div>
+									<span class='numeral invisible'>6</span>
+								</div>
+							</div>
+						</div>
+						<div class="ui-layout-west stm-display" id='display14'>
+							<div class="toolbar" id="display14-toolbar"></div>
+							<div class="ui-layout-content">
+								<div class="canvas" id="display14-canvas">
+									<div class='chart' id='display14-chart'></div>
+									<span class='numeral invisible'>5</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="ui-layout-west">
+					<!--Outer West-->
+					<div class="ui-layout-center stm-display" id="display10">
+						<div class="toolbar" id="display10-toolbar"></div>
+						<div class="ui-layout-content">
+							<div class="canvas" id="display10-canvas">
+								<div class='chart' id='display10-chart'></div>
+								<span class='numeral invisible'>1</span>
+							</div>
+						</div>
+					</div>
+					<div class="ui-layout-south stm-display" id='display13'>
+						<div class="toolbar" id="display13-toolbar"></div>
+						<div class="ui-layout-content">
+							<div class="canvas" id="display13-canvas">
+								<div class='chart' id='display13-chart'></div>
+								<span class='numeral invisible'>4</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">도움말</div>
+				<div id="tab0Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+					<p class="notes">This tab presents a dynamic overview of the system's operation. 
+					Each pane is updated on a regular interval.</p>
+					<p class="notes">Use the controls on each pane's toolbar to 
+					change the update interval. Click on a segment of a pie chart to 'drill down'.</p>
+				</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+		</div><!-- /#tab0 -->
+
+
+		<div id="tab2" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content">
+					즉석/예약 리포트를 설정할 수 있습니다.
+					<!-- Configure automatic report generation, and generate instant reports -->
+				</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab2 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">도움말</div>
+					<div id="tab2Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">Use this tab to obtain reports on the system's operation over a specified period.
+						Daily, weekly, and monthly reports are available.</p>
+						<p class="notes">Generate immediate reports from historical data and download them to 
+						your browser from where they may be displayed or printed.</p>
+						<p class="notes">Scheduled reports are automatically generated after the specified period 
+						has ended. The report is then emailed to one or more recipients. When configuring scheduled 
+						reports, remember to also configure a SMTP server which will be used to submit the 
+						reports for email delivery. </p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+			<div class="ui-layout-west"></div>
+			<div id="reportsTabs" class="ui-layout-center container tabs innertabs">
+				<ul>
+					<li class="tab0"><a href="#tab2-0">즉석리포트</a></li>
+					<li class="tab1"><a href="#tab2-1">예약리포트</a></li>
+				</ul>
+				<div class="ui-layout-content" style="border-top: 0;">
+					<div id="tab2-0" class="container pane-dialog" style="height: 100%;">
+					</div>
+					<div id="tab2-1" class="container pane-dialog stm-scrollable-pane" style="height: 100%;">
+					</div>
+				</div>
+			</div>
+		</div><!-- /#tab2 -->
+
+		<div id="tab3" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content">
+					네트워크 트러블 슈팅을 수행 할 수 있습니다.
+					<!-- Perform network trouble-shooting-->
+				</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab3 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">도움말</div>
+					<div id="tab3Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">The Diagnostics tab gives access to the usual ping and traceroute 
+						tools running on the STM system, allowing you to determine the reachability of, and route 
+						to, a remote system.</p>
+						<p class="notes">It's also possible to capture copies of packets as they flow 
+						through the STM system for download and subsequent off-line analysis using tools such as 
+						<a target="_blank" href="https://www.wireshark.org">Wireshark</a>.</p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+			<div class="ui-layout-west"></div>
+			
+			<div id="diagnosticsTabs" class="ui-layout-center container tabs innertabs">
+				<UL>
+					<li class="tab0"><a href="#tab3-0">핑</a></li>
+					<li class="tab1"><a href="#tab3-1">트레이스라우트</a></li>
+					<li class="tab2"><a href="#tab3-2">패킷캡쳐</a></li>
+				</UL>
+				<div class="ui-layout-content" style="border-top: 0;">
+					<div id="tab3-0" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab3-1" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab3-2" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+				</div>
+			</div>
+		</div><!-- /#tab3 -->
+		<div id="tab4" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content" style="overflow: visible">
+					플로우 커맨드&#8482;를 이용하여 다양한 차트로 활용 할 수 있습니다.<span id="tab4-menu" style="float:right;"></span>
+					<!-- Configure, explore and chart the operation of the FlowCommand&#8482; system <span id="tab4-menu" style="float:right;"></span> -->
+				</div>
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab4 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">도움말</div>
+					<div id="tab4Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">This tab is used to configure the FlowCommand&#8482; system and 
+						observe its operation through custom charts and tables. To become familiar with the 
+						controls and the techniques used, please read the <a class="start-guide-link" href="#">가이드 시작하기</a>.</p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+				<div class="ui-layout-west">
+					<div id="accordion">
+						<h3>
+							Navigating <span class="focus-name"></span>
+						</h3>
+						<div id="nav"></div>
+						<h3>Saved Charts</h3>
+						<div id="fav"></div>
+					</div>
+				</div>
+				<div class="ui-layout-center">
+					<div class="ui-layout-center">
+						<div class="ui-layout-center stm-display" id='display1'>
+							<div class="toolbar" id="display1-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display1-canvas">
+								<div class='chart' id='display1-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span> <span
+									class='numeral invisible'>2</span>
+							</div>
+						</div>
+						<div class="ui-layout-south stm-display" id='display4'>
+							<div class="toolbar" id="display4-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display4-canvas">
+								<div class='chart' id='display4-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span> <span
+									class='numeral invisible'>5</span>
+							</div>
+						</div>
+					</div>
+					<div class="ui-layout-west">
+						<div class="ui-layout-center stm-display" id="display0">
+							<div class="toolbar" id="display0-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display0-canvas">
+								<div class='chart' id='display0-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='numeral invisible'>1</span>
+							</div>
+						</div>
+						<div class="ui-layout-south stm-display" id='display3'>
+							<div class="toolbar" id="display3-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display3-canvas">
+								<div class='chart' id='display3-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span> <span
+									class='numeral invisible'>4</span>
+							</div>
+						</div>
+					</div>
+					<div class="ui-layout-east">
+						<div class="ui-layout-center stm-display" id='display2'>
+							<div class="toolbar" id="display2-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display2-canvas">
+								<div class='chart' id='display2-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span> <span
+									class='numeral invisible'>3</span>
+							</div>
+						</div>
+						<div class="ui-layout-south stm-display" id='display5'>
+							<div class="toolbar" id="display5-toolbar"></div>
+							<div class="canvas ui-layout-content" id="display5-canvas">
+								<div class='chart' id='display5-chart'></div>
+								<div class='drop-cluster'>
+									<div class='drop-target drop-pie' style='display: none;'></div>
+									<div class='drop-target drop-spline' style='display: none;'></div>
+									<div class='drop-target drop-table' style='display: none;'></div>
+									<div class='drop-target drop-polar' style='display: none;'></div>
+									<div class='drop-target drop-collection' style='display: none;'></div>
+									<div class='drop-target drop-history' style='display: none;'></div>
+								</div>
+								<span class='watermark' title=''></span> <span
+									class='numeral invisible'>6</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div><!-- /#tab4-->
+
+		<div id="tab5" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content">컨디션과 알람을 설정하세요.</div>
+				<!-- <div class="decorbar ui-layout-content">Configure Conditions and monitor Alarms</div> -->
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab5 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">Help</div>
+					<div id="tab5Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">Use this tab to view and enable/disable the Conditions that 
+						will cause Alarms to be raised, and study any Alarms that have been raised. </p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+			<div class="ui-layout-west"></div>
+			<div id="alarmsTabs" class="ui-layout-center container tabs innertabs">
+				<UL>
+					<li class="tab0"><a href="#tab5-0">알람</a></li>
+					<li class="tab1"><a href="#tab5-1">컨디션</a></li>
+				</UL>
+				<div class="ui-layout-content" style="border-top: 0;">
+					<div id="tab5-0" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab5-1" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+				</div>
+			</div>
+		</div><!-- /#tab5 -->
+
+		<div id="tab6" class="tab-panel hidden">
+			<div class="ui-layout-north ui-widget">
+				<div class="decorbar ui-layout-content">STM의 유닛을 설정하세요.</div>
+				<!-- <div class="decorbar ui-layout-content">Set-up a Saisei Traffic Manager unit</div> -->
+			</div>
+			<div class="ui-layout-south ui-widget">
+				<div class="decorbar statusbar ui-layout-content"><!-- Statusbar - tab6 --></div>
+			</div>
+			<div class="ui-layout-east">
+				<div class="ui-widget-header ui-corner-top stm-help-heading">Help</div>
+					<div id="tab6Help" class="ui-layout-content stm-help-content stm-scrollable-pane">
+						<p class="notes">Use the facilities under this tab to configure the underlying STM 
+						unit for operation in your network, or to Reload STM or to access its file system. 
+						</p>
+					</div>
+				<div class="ui-widget-footer ui-widget-header ui-corner-bottom stm-help-footer"></div>
+			</div>
+			<div class="ui-layout-west"></div>
+			<div id="systemTabs" class="ui-layout-center container tabs innertabs">
+				<UL>
+					<li class="tab0"><a href="#tab6-0">일반</a></li>
+					<li class="tab1"><a href="#tab6-1">관리자</a></li>
+					<li class="tab2"><a href="#tab6-2">인터페이스</a></li>
+					<li class="tab4"><a href="#tab6-4">리로드</a></li>
+					<li class="tab6"><a href="#tab6-6">파일매니저</a></li>
+				</UL>
+				<div class="ui-layout-content" style="border-top: 0;">
+					<div id="tab6-0" class="container pane-dialog" style="height: 100%;"></div>
+					<div id="tab6-1" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab6-2" class="container pane-dialog stm-scrollable-pane" style="height: 100%;"></div>
+					<div id="tab6-4" class="container pane-dialog" style="height: 100%;"></div>
+					<div id="tab6-6" class="container pane-dialog" style="height: 100%;"></div>
+				</div>
+			</div>
+		</div>
+	</div><!-- /#tabpanels -->
+
+</div><!-- /#outer-center -->
+
+<!-- Last in the HTML, and overflow:visible, so dropdown menu overlays adjacent pane -->
+<div id="outer-north" style="overflow: visible;">
+	<div id="banner">
+		<span id="logo"> <a href="http://www.saisei.com/"
+			title="http://www.saisei.com/" target="_blank"> <img
+				src="/files/img/Saisei-logo-full-color-light-bg.png" alt="Saisei Networks" height="81"></a></span>
+		<div id="outer-strap"><span id="strap"></span></div>
+		<span id="global-menu" style="float:right;"></span>
+		<span id="focus-selector"></span>
+	</div>
+</div>
+
+<!-- Finally, load the scripts -->
+	<script type="text/javascript" src="/files/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery-ui.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.layout-latest.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.layout.resizeTabLayout-latest.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.layout.resizePaneAccordions-latest.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.jstree.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.dataTables.min.js" charset="utf8"></script>
+	<script type="text/javascript" src="/files/jquery/dataTables.tableTools.min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.i18n.properties-min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.validate.js"></script>
+	<script type="text/javascript" src="/files/highcharts/highstock.js"></script>
+	<script type="text/javascript" src="/files/highcharts/exporting.js"></script>
+	<script type="text/javascript" src="/files/highcharts/highcharts-more.js"></script>
+	<script type="text/javascript" src="/files/highcharts/no-data-to-display.js"></script>
+	<script type="text/javascript" src="/files/highcharts/HighchartsLegendExtension.js"></script>
+	<script type="text/javascript" src="/files/jquery/form2js.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery.toObject.js"></script>
+	<script type="text/javascript" src="/files/moment.min.js"></script>
+	<script type="text/javascript" src="/files/jquery/jquery-ui-timepicker-addon.js"></script>
+	<script type="text/javascript" src="/files/elfinder/js/elfinder.min.js"></script>
+	<script type="text/javascript" src="/files/common.js"></script>
+	<script type="text/javascript" src="/files/navigation.js"></script>
+
+</body>
+</html>
