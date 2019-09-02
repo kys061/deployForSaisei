@@ -26,7 +26,6 @@ DD_INTERFACE_LIST = [
 
 # for cmd type is 1 :all users and do log for INCLUDE subnets
 INCLUDE = [
-'192.168.10.0/24',
 ]
 # for cmd type is 2 : one user by src or dst so host must be in internal iprange
 HOST = [
@@ -34,8 +33,8 @@ HOST = [
 TOP_NUM = '10000'
 ARRIVAL_RATE = '0'
 DOMAIN = 'localhost'
-USERNAME = 'admin'
-PASSWORD = 'admin'
+USERNAME = 'cli_admin'
+PASSWORD = 'cli_admin'
 STM_SCRIPT_PATH = r'/opt/stm/target/pcli/stm_cli.py'
 # For several interfaces(eg. iterate logging for interfaces(stm01, stm02) sequently)
 INTERVAL = 1    # type interval

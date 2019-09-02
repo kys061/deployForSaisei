@@ -36,8 +36,8 @@ pos_virt_index=11
 bump_type="cooper"
 model_type="small"
 stm_status="false"
-id="cli_admin"
-pass="cli_admin"
+id="admin"
+pass="FlowCommand#1"
 
 sleep 10
 # check stm and make system_virt_real_device.csv until stm is up
@@ -45,28 +45,28 @@ sleep 10
 # real : the name that stm makes
 # must be interface ordered in /etc/stm/system_virt_real_device.csv : seg1-ext,int, seg2-ext,int
 while ! $stm_status; do
-        if echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | egrep '(Socket|ethernet)' >/dev/null 2>&1; then
+        if echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | egrep '(Socket|Ethernet)' >/dev/null 2>&1; then
                 version=$(echo 'show version' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | awk '{print $1}' | egrep 'V[0-9]+\.[0-9]+' -o)
                 model_type=$(echo 'show parameter model' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | awk '{print $3}')
                 if [ $version == "V7.1" ]; then
                         if [ $model_type == "tiny" ]; then
                                 bump_count=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | wc -l)
                         else
-                                bump_count=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | wc -l)
+                                bump_count=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | wc -l)
                         fi
                         stm_status='true'
                         echo 'virt,real' >/etc/stm/system_virt_real_device.csv
                         if [ $model_type == "tiny" ]; then
                                 echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | awk '{print $1 "," $11; fflush()}' >>/etc/stm/system_virt_real_device.csv
                         else
-                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $1 "," $11; fflush()}' >>/etc/stm/system_virt_real_device.csv
+                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $1 "," $11; fflush()}' >>/etc/stm/system_virt_real_device.csv
                         fi
                         if [ ! -e /etc/stm/system_virt_real_device.csv ]; then
                                 echo 'virt,real' >/etc/stm/system_virt_real_device.csv
                                 if [ $model_type == "tiny" ]; then
                                         echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | awk '{print $1 "," $11; fflush()}' >>/etc/stm/system_virt_real_device.csv
                                 else
-                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $1 "," $11; fflush()}' >>/etc/stm/system_virt_real_device.csv
+                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $1 "," $11; fflush()}' >>/etc/stm/system_virt_real_device.csv
                                 fi
                                 if [ $? -eq 1 ]; then
                                         sleep 10
@@ -74,7 +74,7 @@ while ! $stm_status; do
                                         if [ $model_type == "tiny" ]; then
                                                 echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | awk '{print $1 "," $11; fflush()}' >>/etc/stm/system_virt_real_device.csv
                                         else
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $1 "," $11; fflush()}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $1 "," $11; fflush()}' >>/etc/stm/system_virt_real_device.csv
                                         fi
                                 fi
                         fi
@@ -82,68 +82,68 @@ while ! $stm_status; do
                         if [ $model_type == "tiny" ]; then
                                 bump_count=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | wc -l)
                         else
-                                bump_count=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | wc -l)
+                                bump_count=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | wc -l)
                         fi
                         stm_status='true'
                         echo 'virt,real' >/etc/stm/system_virt_real_device.csv
                         if [ $model_type == "tiny" ]; then
-                                soc_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep external | awk '{print $'$pos_realint'}' | awk 'FNR == 1 {print}' | rev | cut -d":" -f2)
-                                soc_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep external | awk '{print $'$pos_realint'}' | awk 'FNR == 2 {print}' | rev | cut -d":" -f2)
-                                soc_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $'$pos_realint'}' | awk 'FNR == 1 {print}' | rev | cut -d":" -f2)
-                                soc_d=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $'$pos_realint'}' | awk 'FNR == 2 {print}' | rev | cut -d":" -f2)
+                                soc_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep External | awk '{print $'$pos_realint'}' | awk 'FNR == 1 {print}' | rev | cut -d":" -f2)
+                                soc_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep External | awk '{print $'$pos_realint'}' | awk 'FNR == 2 {print}' | rev | cut -d":" -f2)
+                                soc_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $'$pos_realint'}' | awk 'FNR == 1 {print}' | rev | cut -d":" -f2)
+                                soc_d=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $'$pos_realint'}' | awk 'FNR == 2 {print}' | rev | cut -d":" -f2)
                                 # compare pci value of interface
                                 if [ $soc_a -lt $soc_b ]; then
-                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
                                         if [ $soc_c -lt $soc_d ]; then
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
                                         else
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
                                         fi
                                 else
-                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
                                         # compare pci value of interface
                                         if [ $soc_c -lt $soc_d ]; then
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
                                         else
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
                                         fi
                                 fi
                         else
-                                eth_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep external | awk '{print $$pos_pciaddr}' | awk 'FNR == 1 {print}' | rev | cut -d":" -f2) # 20
-                                eth_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep external | awk '{print $$pos_pciaddr}' | awk 'FNR == 2 {print}' | rev | cut -d":" -f2) # 40
-                                eth_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $$pos_pciaddr}' | awk 'FNR == 1 {print}' | rev | cut -d":" -f2) # 30
-                                eth_d=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $$pos_pciaddr}' | awk 'FNR == 2 {print}' | rev | cut -d":" -f2) # 50
+                                eth_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep External | awk '{print $$pos_pciaddr}' | awk 'FNR == 1 {print}' | rev | cut -d":" -f2) # 20
+                                eth_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep External | awk '{print $$pos_pciaddr}' | awk 'FNR == 2 {print}' | rev | cut -d":" -f2) # 40
+                                eth_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $$pos_pciaddr}' | awk 'FNR == 1 {print}' | rev | cut -d":" -f2) # 30
+                                eth_d=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $$pos_pciaddr}' | awk 'FNR == 2 {print}' | rev | cut -d":" -f2) # 50
                                 # compare pci value of interface
                                 if [ $eth_a -lt $eth_b ]; then
-                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
                                         if [ $eth_c -lt $eth_d ]; then
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
                                         else
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
                                         fi
                                 else
-                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                        echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
                                         # compare pci value of interface
                                         if [ $eth_c -lt $eth_d ]; then
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
                                         else
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep external | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
-                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 2 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep External | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
+                                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep Internal | awk '{print $1 "," $'$pos_realint'; fflush()}' | awk 'FNR == 1 {print}' >>/etc/stm/system_virt_real_device.csv
                                         fi
                                 fi
                         fi
@@ -161,14 +161,14 @@ function get_real_ports() {
         if [ $version == "V7.1" ]; then
                 realint_count=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | wc -l)
         else
-                realint_count=$(echo 'show interfaces select interface system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $10}' | wc -l)
+                realint_count=$(echo 'show interfaces select interface system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $10}' | wc -l)
         fi
         for ((i = 0; i < $realint_count; i++)); do
                 if [ $i == 0 ]; then
                         if [ $version == "V7.1" ]; then
                                 virt_port_1_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 1 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
                         else
-                                virt_port_1_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 1 {print}')
+                                virt_port_1_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 1 {print}')
                         fi
                         if [[ $virt_port_1_index == '' ]]; then
                                 virt_port_1=''
@@ -178,7 +178,7 @@ function get_real_ports() {
                                         virt_port_1=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_1_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
                                         real_port_1=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_1 | cut -d "," -f2)
                                 else
-                                        #virt_port_1=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py admin:admin@localhost |grep ethernet |grep $virt_port_1_index |awk '{print $1}')
+                                        #virt_port_1=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py admin:admin@localhost |grep Ethernet |grep $virt_port_1_index |awk '{print $1}')
                                         virt_port_1=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 1 {print}')
                                         real_port_1=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_1 | cut -d "," -f2)
                                 fi
@@ -187,7 +187,7 @@ function get_real_ports() {
                         if [ $version == "V7.1" ]; then
                                 virt_port_2_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 2 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
                         else
-                                virt_port_2_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 2 {print}')
+                                virt_port_2_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 2 {print}')
                         fi
                         if [[ $virt_port_2_index == '' ]]; then
                                 virt_port_2=''
@@ -197,7 +197,7 @@ function get_real_ports() {
                                         virt_port_2=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_2_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
                                         real_port_2=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_2 | cut -d "," -f2)
                                 else
-                                        #virt_port_2=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py admin:admin@localhost |grep ethernet |grep $virt_port_2_index |awk '{print $1}')
+                                        #virt_port_2=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py admin:admin@localhost |grep Ethernet |grep $virt_port_2_index |awk '{print $1}')
                                         virt_port_2=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 2 {print}')
                                         real_port_2=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_2 | cut -d "," -f2)
                                 fi
@@ -206,7 +206,7 @@ function get_real_ports() {
                         if [ $version == "V7.1" ]; then
                                 virt_port_3_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 3 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
                         else
-                                virt_port_3_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 3 {print}')
+                                virt_port_3_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 3 {print}')
                         fi
                         if [[ $virt_port_3_index == '' ]]; then
                                 virt_port_3=$virt_port_1
@@ -216,7 +216,7 @@ function get_real_ports() {
                                         virt_port_3=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_3_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
                                         real_port_3=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_3 | cut -d "," -f2)
                                 else
-                                        #virt_port_3=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py admin:admin@localhost |grep ethernet |grep $virt_port_3_index |awk '{print $1}')
+                                        #virt_port_3=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py admin:admin@localhost |grep Ethernet |grep $virt_port_3_index |awk '{print $1}')
                                         virt_port_3=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 3 {print}')
                                         real_port_3=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_3 | cut -d "," -f2)
                                 fi
@@ -225,7 +225,7 @@ function get_real_ports() {
                         if [ $version == "V7.1" ]; then
                                 virt_port_4_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 4 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
                         else
-                                virt_port_4_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
+                                virt_port_4_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
                         fi
                         if [[ $virt_port_4_index == '' ]]; then
                                 virt_port_4=$virt_port_2
@@ -235,7 +235,7 @@ function get_real_ports() {
                                         virt_port_4=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_4_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
                                         real_port_4=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_4 | cut -d "," -f2)
                                 else
-                                        #virt_port_4=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py admin:admin@localhost |grep ethernet |grep $virt_port_4_index |awk '{print $1}')
+                                        #virt_port_4=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py admin:admin@localhost |grep Ethernet |grep $virt_port_4_index |awk '{print $1}')
                                         virt_port_4=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 4 {print}')
                                         real_port_4=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_4 | cut -d "," -f2)
                                 fi
@@ -290,18 +290,18 @@ function check_model_type_enabled() {
                         fi
                 else
                         if [ $1 -eq 1 ] && [ $2 -eq 1 ]; then
-                                bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_1 | awk '{print $4}')
+                                bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep $real_port_1 | awk '{print $4}')
                         fi
                         if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
-                                bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_2 | awk '{print $4}')
+                                bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep $real_port_2 | awk '{print $4}')
                         fi
                         if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-                                bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_3 | awk '{print $4}')
+                                bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep $real_port_3 | awk '{print $4}')
                         fi
                         if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-                                bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_4 | awk '{print $4}')
+                                bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep $real_port_4 | awk '{print $4}')
                         fi
-                        #       declare "bitw${2}_port_${1}_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep ethernet |grep $real_port_1 |awk '{print $4}')"
+                        #       declare "bitw${2}_port_${1}_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_1 |awk '{print $4}')"
                 fi
         else
                 if [ $model_type == "tiny" ]; then
@@ -320,18 +320,18 @@ function check_model_type_enabled() {
                         fi
                 else
                         if [ $1 -eq 1 ] && [ $2 -eq 1 ]; then
-                                bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_1 | awk '{print $6}')
+                                bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep $real_port_1 | awk '{print $6}')
                         fi
                         if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
-                                bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_2 | awk '{print $6}')
+                                bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep $real_port_2 | awk '{print $6}')
                         fi
                         if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-                                bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_3 | awk '{print $6}')
+                                bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep $real_port_3 | awk '{print $6}')
                         fi
                         if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-                                bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_4 | awk '{print $6}')
+                                bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | grep $real_port_4 | awk '{print $6}')
                         fi
-                        #       declare "bitw${2}_port_${1}_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep ethernet |grep $real_port_1 |awk '{print $4}')"
+                        #       declare "bitw${2}_port_${1}_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_1 |awk '{print $4}')"
                 fi
         fi
 }
@@ -362,12 +362,12 @@ function check_bumps() {
                         if [ $version == "V7.1" ]; then
                                 bitw_port_1_index=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 $bitw_port_1 | cut -d " " -f1 | rev | cut -d "." -f1)
                                 bitw_port_1_adminstatus=$(snmpget -v 2c -c public localhost ifAdminStatus.$bitw_port_1_index | cut -d" " -f4 | awk -F"(" '{print $1}')
-                                # bitw_port_1_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep ethernet |grep $real_port_1 |awk '{print $4}')
+                                # bitw_port_1_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_1 |awk '{print $4}')
                                 check_model_type_enabled 1 1
                                 bitw_port_1_pci=$(cat /etc/stm/system_interfaces.csv | grep $real_port_1 | cut -d "," -f2 | sed 's/\://g' | sed 's/\.//g')
                                 # bitw_port_1_pci=$(cat /etc/stm/system_interfaces.csv | grep $bitw_port_1 | cut -d "," -f2 | sed 's/\://g' | sed 's/\.//g')
                         else
-                                bitw_port_1_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 1 {print}')
+                                bitw_port_1_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 1 {print}')
                                 # echo "bitw_port_1_adminstatus BEFORE: ""$bitw_port_1_adminstatus"
                                 bitw_port_1_adminstatus=$(echo 'show interfaces select interface system_interface uid admin_status' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep $bitw_port_1_index | awk '{print $14}')
                                 bitw_port_1_adminstatus=$(echo "$bitw_port_1_adminstatus" | awk '{print tolower($0)}')
@@ -382,12 +382,12 @@ function check_bumps() {
                         if [ $version == "V7.1" ]; then
                                 bitw_port_2_index=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 $bitw_port_2 | cut -d " " -f1 | rev | cut -d "." -f1)
                                 bitw_port_2_adminstatus=$(snmpget -v 2c -c public localhost ifAdminStatus.$bitw_port_2_index | cut -d " " -f4 | awk -F"(" '{print $1}')
-                                # bitw_port_2_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep ethernet |grep $real_port_2 |awk '{print $4}')
+                                # bitw_port_2_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_2 |awk '{print $4}')
                                 check_model_type_enabled 1 2
                                 bitw_port_2_pci=$(cat /etc/stm/system_interfaces.csv | grep $real_port_2 | cut -d"," -f2 | sed 's/\://g' | sed 's/\.//g')
                                 # bitw_port_2_pci=$(cat /etc/stm/system_interfaces.csv | grep $bitw_port_2 | cut -d"," -f2 | sed 's/\://g' | sed 's/\.//g')
                         else
-                                bitw_port_2_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 2 {print}')
+                                bitw_port_2_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 2 {print}')
                                 bitw_port_2_adminstatus=$(echo 'show interfaces select interface system_interface uid admin_status' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep $bitw_port_2_index | awk '{print $14}')
                                 bitw_port_2_adminstatus=$(echo "$bitw_port_2_adminstatus" | awk '{print tolower($0)}')
                                 check_model_type_enabled 1 2
@@ -400,12 +400,12 @@ function check_bumps() {
                         if [ $version == "V7.1" ]; then
                                 bitw2_port_1_index=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 $bitw2_port_1 | cut -d " " -f1 | rev | cut -d "." -f1)
                                 bitw2_port_1_adminstatus=$(snmpget -v 2c -c public localhost ifAdminStatus.$bitw2_port_1_index | cut -d" " -f4 | awk -F"(" '{print $1}')
-                                # bitw2_port_1_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep ethernet |grep $real_port_3 |awk '{print $4}')
+                                # bitw2_port_1_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_3 |awk '{print $4}')
                                 check_model_type_enabled 2 1
                                 bitw2_port_1_pci=$(cat /etc/stm/system_interfaces.csv | grep $real_port_3 | cut -d "," -f2 | sed 's/\://g' | sed 's/\.//g')
                                 # bitw2_port_1_pci=$(cat /etc/stm/system_interfaces.csv | grep $bitw2_port_1 | cut -d "," -f2 | sed 's/\://g' | sed 's/\.//g')
                         else
-                                bitw2_port_1_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 3 {print}')
+                                bitw2_port_1_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 3 {print}')
                                 bitw2_port_1_adminstatus=$(echo 'show interfaces select interface system_interface uid admin_status' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep $bitw2_port_1_index | awk '{print $14}')
                                 bitw2_port_1_adminstatus=$(echo "$bitw2_port_1_adminstatus" | awk '{print tolower($0)}')
                                 check_model_type_enabled 2 1
@@ -418,12 +418,12 @@ function check_bumps() {
                         if [ $version == "V7.1" ]; then
                                 bitw2_port_2_index=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 $bitw2_port_2 | cut -d " " -f1 | rev | cut -d "." -f1)
                                 bitw2_port_2_adminstatus=$(snmpget -v 2c -c public localhost ifAdminStatus.$bitw2_port_2_index | cut -d " " -f4 | awk -F"(" '{print $1}')
-                                # bitw2_port_2_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep ethernet |grep $real_port_4 |awk '{print $4}')
+                                # bitw2_port_2_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_4 |awk '{print $4}')
                                 check_model_type_enabled 2 2
                                 bitw2_port_2_pci=$(cat /etc/stm/system_interfaces.csv | grep $real_port_4 | cut -d"," -f2 | sed 's/\://g' | sed 's/\.//g')
                                 # bitw2_port_2_pci=$(cat /etc/stm/system_interfaces.csv | grep $bitw_port_2 | cut -d"," -f2 | sed 's/\://g' | sed 's/\.//g')
                         else
-                                bitw2_port_2_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
+                                bitw2_port_2_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
                                 bitw2_port_2_adminstatus=$(echo 'show interfaces select interface system_interface uid admin_status' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep $bitw2_port_2_index | awk '{print $14}')
                                 bitw2_port_2_adminstatus=$(echo "$bitw2_port_2_adminstatus" | awk '{print tolower($0)}')
                                 check_model_type_enabled 2 2
@@ -438,7 +438,7 @@ function check_bumps() {
                         if [ "$bitw_port_2_adminstatus" == "up" ]; then
                                 if [ "$bump_type" == "cooper" ]; then
                                         if [ -d /sys/class/bypass/g3bp0 ]; then
-                                                if [ $bitw_port_1_enable == "enabled" ] && [ $bitw_port_2_enable == "enabled" ]; then
+                                                if [ $bitw_port_1_enable == "Enabled" ] && [ $bitw_port_2_enable == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
                                                                 if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
@@ -466,7 +466,7 @@ function check_bumps() {
                                                         fi
                                                 fi
                                                 if [ -d /sys/class/bypass/g3bp1 ]; then
-                                                        if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
+                                                        if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
                                                                 if [ $model_type == "tiny" ]; then
                                                                         # check interface thread hang
                                                                         if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
@@ -495,7 +495,7 @@ function check_bumps() {
                                         fi
                                 else
                                         if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass0 ]; then
-                                                if [ "$bitw_port_1_enable" == "enabled" ] && [ "$bitw_port_2_enable" == "enabled" ]; then
+                                                if [ "$bitw_port_1_enable" == "Enabled" ] && [ "$bitw_port_2_enable" == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
                                                                 if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
@@ -522,7 +522,7 @@ function check_bumps() {
                                                 fi
                                         fi
                                         if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass1 ]; then
-                                                if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
+                                                if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
                                                                 if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
@@ -557,7 +557,7 @@ function check_bumps() {
                         if [ "$bitw2_port_2_adminstatus" == "up" ]; then
                                 if [ "$bump2_type" == "cooper" ]; then
                                         if [ -d /sys/class/bypass/g3bp0 ]; then
-                                                if [ "$bitw_port_1_enable" == "enabled" ] && [ "$bitw_port_2_enable" == "enabled" ]; then
+                                                if [ "$bitw_port_1_enable" == "Enabled" ] && [ "$bitw_port_2_enable" == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
                                                                 if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
@@ -583,7 +583,7 @@ function check_bumps() {
                                                         fi
                                                 fi
                                                 if [ -d /sys/class/bypass/g3bp1 ]; then
-                                                        if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
+                                                        if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
                                                                 if [ $model_type == "tiny" ]; then
                                                                         # check interface thread hang
                                                                         if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
@@ -612,7 +612,7 @@ function check_bumps() {
                                         fi
                                 else
                                         if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass0 ]; then
-                                                if [ "$bitw_port_1_enable" == "enabled" ] && [ "$bitw_port_2_enable" == "enabled" ]; then
+                                                if [ "$bitw_port_1_enable" == "Enabled" ] && [ "$bitw_port_2_enable" == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
                                                                 if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
@@ -639,7 +639,7 @@ function check_bumps() {
                                                 fi
                                         fi
                                         if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass1 ]; then
-                                                if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
+                                                if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
                                                                 if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then

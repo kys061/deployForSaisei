@@ -42,8 +42,8 @@ import copy
 ###############################################################################
 # User Setting
 ###############################################################################
-USERNAME = 'admin'
-PASSWORD = 'admin'
+USERNAME = 'cli_admin'
+PASSWORD = 'cli_admin'
 
 # percentage of usage disk(/) of df command
 LIMIT_DISK_SIZE = 57
