@@ -1,0 +1,12 @@
+#bypass_config
+#model:['fc2000', 'fc4000']
+model:fc4000
+segment1:slot0
+segment2:slot0
+segment3:slot1
+segment4:slot1
+
+#report_config
+id:admin
+password:FlowCommand#1
+management_ip:1.1.1.1

@@ -40,7 +40,7 @@ fi
 is_fiber=$(lspci |grep Ether |grep Fiber -o)
 if [ ! -z "$is_fiber" ]; then
     cd  /opt/stm/bypass_drivers/portwell_fiber
-    unzip caswell_drv_network-bypass-V3.20.0.zip 
+    unzip caswell_drv_network-bypass-V3.20.0.zip
     cd driver
     make [KSRC=..]
     bypass_mod_installed=$(/sbin/lsmod | grep "network_bypass")
@@ -51,7 +51,7 @@ if [ ! -z "$is_fiber" ]; then
     if [ -z "$i2c_mod_installed" ]; then
         modprobe i2c-i801
     fi
-    
+
     insmod network-bypass.ko board=CAR3040
     cd /sys/class/misc/caswell_bpgen2/slot0/
     echo 2 > bypass0

@@ -129,7 +129,7 @@ is_extracted = False
 err_lists = ['Cannot connect to server', 'does not exist', 'no matching objects',
              'waiting for server', 'cannot connect to server']
 #
-get_interface_cmd = 'echo \'show interfaces\' | sudo /opt/stm/target/pcli/stm_cli.py '+USERNAME+':'+PASSWORD+'@localhost |egrep \'(Internal|External)\' |awk \'{print $1}\''
+get_interface_cmd = 'echo \'show interfaces\' | sudo /opt/stm/target/pcli/stm_cli.py '+USERNAME+':'+PASSWORD+'@localhost |egrep \'([Ii]nternal|[Ee]xternal)\' |awk \'{print $1}\''
 ################################################################################
 #                       Common Module
 ################################################################################

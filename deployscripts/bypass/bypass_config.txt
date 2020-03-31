@@ -1,0 +1,8 @@
+bump_type=
+model_type=
+
+virt,real
+external1,stm6
+internal1,stm7
+external2,stm8
+internal2,stm9

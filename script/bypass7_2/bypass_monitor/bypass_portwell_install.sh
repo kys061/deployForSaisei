@@ -47,6 +47,7 @@ fi
 # fiber install
 #
 is_fiber=$(lspci |grep Ether |grep Fiber -o)
+is_fiber=$(lspci |grep Ether |grep SFP -o)
 if [ ! -z "$is_fiber" ]; then
   cd  /opt/stm/bypass_drivers/portwell_fiber
   unzip caswell_drv_network-bypass-$bpfiber_ver.zip
@@ -61,24 +62,35 @@ if [ ! -z "$is_fiber" ]; then
     modprobe i2c-i801
   fi
 
-  insmod network-bypass.ko board=CAR3040
-  cd /sys/class/misc/caswell_bpgen2/slot0/
-  echo 2 > bypass0
-  echo 1 > bpe0
-  if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass1 ];
+  #insmod network-bypass.ko board=CAR3040
+  #insmod network-bypass.ko board=CAR3070
+  insmod network-bypass.ko board=COSD304
+  # cd /sys/class/misc/caswell_bpgen2/slot0/
+  # echo 2 > bypass0
+  # echo 1 > bpe0
+  if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass0 ];
   then
     cd /sys/class/misc/caswell_bpgen2/slot0/
-    echo 2 > bypass1
-    echo 1 > bpe1
+    echo 2 > bypass0
+    echo 1 > bpe0
+    echo 1 > nextboot0
+  fi
+  if [ -e /sys/class/misc/caswell_bpgen2/slot1/bypass0 ];
+  then
+    cd /sys/class/misc/caswell_bpgen2/slot1/
+    echo 2 > bypass0
+    echo 1 > bpe0
+    echo 1 > nextboot0
   fi
 fi
 # make initial file for reboot and shutdown
-if [ "$uname_r" = "$kernel_ver" ]; then
+if [ "$uname_r" = "$kernel_ver" ]; then # 18.04
   cp /etc/stmfiles/files/scripts/portwell_multi.service /lib/systemd/system/.
+  cp /etc/stmfiles/files/scripts/bypass_portwell_enable.sh /etc/init.d/bypass_portwell_enable.sh
   cd /lib/systemd/system/
   systemctl daemon-reload
   systemctl enable portwell_multi.service
-else
+else  # 14.04
   if [ ! -e /etc/init.d/bypass_portwell_enable.sh ]; then
     cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_portwell_enable.sh /etc/init.d/.
       if [ ! -e /etc/rc6.d/K20bypass_portwell_enable.sh ]; then
