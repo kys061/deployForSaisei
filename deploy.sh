@@ -174,11 +174,11 @@ function setUserAndRecConfig()
         for ((i=${#internals[@]}-1; i>=0; i--));
         do
           for ((j=${#old_user_internals[@]}-1; j>=0; j--))
-  			     do
-               if [ ${internals[$i]} = ${old_user_internals[$j]} ]; then
-                 equal_count=$[$equal_count +1]
-  				     fi
-  			     done
+            do
+              if [ ${internals[$i]} = ${old_user_internals[$j]} ]; then
+                equal_count=$[$equal_count +1]
+              fi
+            done
   			  if [ $equal_count = 0 ]; then
     				sed -i "/^INCLUDE/a'${internals[$i]}'," $user_listener_config_filename
     				log_info_and_echo "# Adding ${internals[$i]} in $user_listener_config_filename"

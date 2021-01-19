@@ -1,0 +1,42 @@
+[PMBus Linux Driver/Tool]
+==================================================================
+Date: Jul 24 2019
+==================================================================
+
+1.Power Supply Support List
+  - FSP
+        FSP550-50ERS
+        FSP600-50ERS
+        FSP800-50DRS
+        FSP500-50FSPT
+  - 3Y
+        YH-5301E/YH-5301K
+        YH-5301C
+        YH-5301M
+        YH-5301R
+  - ETASIS
+        EFRP-S2400C
+        EFRP-G2550
+  - ZIPPY
+        M1R2-5400V0H
+        M1D2-5300V0V
+        M1P2-5420V4V
+        M1P2-5500V4V
+        S1Z2-5600K2V
+        M1Y2-5300G2H
+        ZRH2-5800K2V
+        ZRH-2800K2
+        R1T2-5300G2H
+        ZRP2-5600K2V
+  - ACBEL
+        R2CU6551A-G
+  - COMPUWARE
+        CPR-1621-2HB
+        CPR-5011-4A3
+        CPR-7511-1M1
+  - DELTA
+        DPS-300AB-102C
+
+2. Script Support List
+  - Zippy
+        ZRH2-5800K2V

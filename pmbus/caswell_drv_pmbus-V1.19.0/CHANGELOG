@@ -1,0 +1,264 @@
+===============================================================================
+    caswell_drv_pmbus V1.19.0 ChangeLogs
+===============================================================================
+Date:   Fri Sep 6 16:05:34 2019 +0800
+
+    1. Add Zippy ZRP2-5600K2V support.
+    2. Modify print message of script.
+    3. Add MFR_REVISION and MFR_FWID in ZRP2-5600K2V config file.
+    4. To fix kernel version 2.6.32 compile issue.
+    5. Set version to V1.19.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.18.0 ChangeLogs
+===============================================================================
+Date:   Mon Jul 8 14:33:10 2019 +0800
+
+    1. Add Delta CPRS DPS-300AB-102C support.
+    2. Set version to V1.18.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.17.1 ChangeLogs
+===============================================================================
+Date:   Thu Mar 7 19:01:45 2019 +0800
+
+    1. Add query single module support.
+    2. Add hardware's PEC support.
+    3. Add file's lock to avoid MCU exceptional.
+    4. Add Support FSP550-50ERS.
+    5. Fix issue of error exopnent when switch i2c mux channel.
+    6. Set version to V1.17.1.
+
+===============================================================================
+    caswell_drv_pmbus V1.17.0 ChangeLogs
+===============================================================================
+Date:   Tue Jan 29 11:56:51 2019 +0800
+
+    1. Add YH-5301E-CATO Support.
+    2. Develop script to get data of i2c and pmbus.
+    3. Add config file of ZRH-2800K2.
+    4. Set version to V1.17.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.16.1 ChangeLogs
+===============================================================================
+Date:   Mon Nov 19 10:06:48 2018 +0800
+
+    1. Add lock in driver and retry method in utility.
+    2. Set version to V1.16.1.
+
+===============================================================================
+    caswell_drv_pmbus V1.16.0 ChangeLogs
+===============================================================================
+Date:   Wed Oct 17 21:08:41 2018 +0800
+
+    1. Add CPR-7511-1M1 support.
+    2. Add conditional to check option of pmbus status.
+    3. Add YH-5301R support.
+    4. Add R1T2-5300G2H support
+    5. Add WORD status and new option -w.
+    6. Modify YH5301E.cfg for support new command -w.
+    7. Set version to V1.16.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.15.0 ChangeLogs
+===============================================================================
+Date:   Fri Aug 10 17:30:54 2018 +0800
+
+    1. Add delay option when insert driver.
+    2. Set version V1.15.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.14.0 ChangeLogs
+===============================================================================
+Date:   Mon Jul 23 17:27:38 2018 +0800
+
+    1. Add Add ZRH2-5800K2V power support.
+    2. Add CPR-5011-4A3 support.
+    3. Set version to V1.14.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.12.0 ChangeLogs
+===============================================================================
+Date:   Wed Feb 21 14:50:25 2018 +0800
+
+    1. Add YH-5301M-single power support.
+    2. Fix CPR-1621-2HB and R2CU6551A-G config wrong value.
+    3. Fix pmbus tool bug.
+       3.1 Add judgement function for "clear page" function.
+    4. Set version to V1.12.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.11.0 ChangeLogs
+===============================================================================
+Date:   Fri Dec 29 16:20:21 2017 +0800
+
+    1. Add R2CU6551A-G power support.
+    2. Add CPR-1621-2HB power support. 
+    3. Set version to V1.11.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.10.0 ChangeLogs
+===============================================================================
+Date:   Mon Apr 10 11:22:23 2017 +0800
+
+    1. Add M1P2-5500V4V config file.
+    2. Set version to V1.10.0.B0.
+    3. Set version to V1.10.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.9.1 ChangeLogs
+===============================================================================
+Date:   Fri Dec 23 15:15:27 2016 +0800
+
+    1. Add M1P2-5420V4V-RDW config file.
+    2. Modify Radware power display.
+    3. Add EFRP-S2400C-RDW config file.
+    4. Set version to V1.9.1.
+
+===============================================================================
+    caswell_drv_pmbus V1.9.0 ChangeLogs
+===============================================================================
+Date:   Mon Nov 28 21:30:13 2016 +0800
+
+    1. Add power "M1Y2-5300G2H" support.
+    2. Modify some config file wrong message.
+    3. Set version to V1.9.0.B0.
+    4. Set version to V1.9.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.8.1 ChangeLogs
+===============================================================================
+Date:   Wed Oct 19 17:14:26 2016 +0800
+
+    1. Remove pmbus_ioctl_antiquated function.
+    2. Set version to V1.8.1.
+
+===============================================================================
+    caswell_drv_pmbus V1.8.0 ChangeLogs
+===============================================================================
+Date:   Mon Oct 17 12:08:24 2016 +0800
+
+    1. Allow pmbus utility is compatible between 32bit and 64bit.
+    2. Modify power config file "YH-5301E.cfg".
+    3. Modify power config "M1P2-5420V4V".
+       3.1 Add "Ouput Current", "Output Power", and "Power Status" value.
+    4. Set version to V1.8.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.7.0 ChangeLogs
+===============================================================================
+Date:   Tue Sep 13 16:01:50 2016 +0800
+
+    1. Add power "M1P2-5420V4V" and S1Z2-5600K2V support.
+    2. Remove fan status redundant message.
+    3. Set version to V1.7.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.6.0 ChangeLogs
+===============================================================================
+Date:   Mon Jul 25 17:32:27 2016 +0800
+
+    1. Add MFR_SERIAL function.
+       1.1 Add Serial number in MFR information.
+    2. Modify YH-5301E.cfg file.
+    3. Set version to V1.6.0.B0.
+    4. Move parameter "DRV_VERSION" from "pmbus-core.h" to "pmbus-ioctl.h" file.
+    5. Set version to V1.6.0.B1.
+    6. Set version to V1.6.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.5.0 ChangeLogs
+===============================================================================
+Date:   Tue Jul 5 11:20:32 2016 +0800
+
+    1. Add power "M1D2-5300V0V" support.
+    2. Set pmbus driver version 1.5.0.B0.
+    3. Set pmbus tool version 1.5.0.B0.
+    4. Set pmbus driver version to V1.5.0.
+    5. Set pmbus tool version to V1.5.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.4.1 ChangeLogs
+===============================================================================
+Date:   Thu Apr 21 17:10:29 2016 +0800
+
+    1. Modify ioctl function of pmbus driver.
+       1.1 Use copy_from_user to get user space structure.
+       1.2 Use copy_to_user to return value to user space.
+    2. Set pmbus driver version to V1.4.1.B0
+    3. Set pmbus driver version to V1.4.1.
+
+===============================================================================
+    caswell_drv_pmbus V1.4.0 ChangeLogs
+===============================================================================
+Date:   Mon Dec 14 21:32:45 2015 +0800
+
+    1. Add ZIPPY power "M1R2-5400V0H" support.
+    2. Modify MFR information display way.
+    3. Modify power config file's wrong message.
+    4. Set version to V1.4.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.3.0 ChangeLogs
+===============================================================================
+Date:   Wed Sep 30 15:53:37 2015 +0800
+
+    1. Add support power "EFRP-S2400C" and "YH-5301M".
+    2. Add power "EFRP-G2550" support.
+    3. Delete redundant display message.
+    4. Change read/write string's size.
+    5. Modify program dispaly message.
+    6. Set version to V1.3.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.2.0 ChangeLogs
+===============================================================================
+Date:   Tue Jun 23 18:00:08 2015 +0800
+
+    1. Add power "YH-5301C" support.
+    2. Add parameter "page_fmt" to identify which way to use.
+    3. Add parameter "fw_id_version" to identify command "FW_ID" address.
+    4. Correct "YH-5301C.cfg" file's parameter "FW_ID_VERSION" spelling.
+    5. Set version to V1.2.0.
+
+===============================================================================
+    caswell_drv_pmbus V1.1.0 ChangeLogs
+===============================================================================
+Date:   Mon Feb 2 13:53:51 2015 +0800
+
+    1. Add 3Y default backplane address support.
+    2. Modify Fan speed variable in YH-5301E-CAR4020.cfg and YH-5301E.cfg.
+    3. Set repository version to V1.1.0.
+
+===========================================================================
+caswell_drv_pmbus V1.0.3 ChangeLogs
+===========================================================================
+Date:   Tue Dec 9 14:23:33 2014 +0800
+
+    1. Add MFR_FW_DATE command support in MFR information.
+    2. Change name "Module 7" to "Backplane".
+    3. Set repository version to V1.0.3.
+
+===========================================================================
+caswell_drv_pmbus V1.0.2 ChangeLogs
+===========================================================================
+Date:   Wed Nov 12 14:25:18 2014 +0800
+
+    1. Modify the display of VOUT value.
+    2. Set repository version to V1.0.2.
+
+===========================================================================
+caswell_drv_pmbus V1.0.1 ChangeLogs
+===========================================================================
+Date:   Mon Sep 15 14:05:49 2014 +0800
+
+    1. Modify parameter "CAR_VER" to "TOOL_VERSION" in pmbus-ctrl.c.
+    2. Set repository version to V1.0.1.
+
+===========================================================================
+caswell_drv_pmbus V1.0.0 ChangeLogs
+===========================================================================
+Date:   Tue Sep 2 14:19:12 2014 +0800
+
+    1. First release version.

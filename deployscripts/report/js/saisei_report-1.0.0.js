@@ -999,7 +999,7 @@ reportApp.service('ReportQstring', function() {
         };
 
         this.getQstring = function(){
-            return start;
+            return start + "&time=utc";
         };
     };
 

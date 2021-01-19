@@ -32,7 +32,7 @@ logger = None
 
 err_lists = ['Cannot connect to server', 'does not exist', 'no matching objects', 'waiting for server']
 
-MUL = 10
+MUL = 5
 ##########
 
 def make_logger():
@@ -267,21 +267,26 @@ def check_stm_enable_count():
 
 
 def check_interface_thread():
-    global thread_chk_count, is_stm_started
+    global thread_chk_count, is_stm_started, apache_restart_count
 
     logger.info("STM Thread Checking is Started...")
 
     if check_subprocess_data(subprocess_open(
-        get_command(r"show parameter", r"|grep 'interfaces_per_core' |awk '{print $2}'"), 10)[0]):
+        get_command(r"show parameter", r"|grep 'cores_per_interface' |awk '{print $2}'"), 10)[0]):
         try:
             parameter = subprocess_open(
-                get_command(r"show parameter", r"|grep 'interfaces_per_core' |awk '{print $2}'"), 10)[0].strip()
+                get_command(r"show parameter", r"|grep 'cores_per_interface' |awk '{print $2}'"), 10)[0].strip()
         except Exception as e:
             logger.error("Cannot strip() parameter data.")
             parameter = "0"
             pass
-
-        if int(parameter) >= 2:
+        try:
+            parameter = int(parameter)
+        except Exception as e:
+            logger.error(e)
+            sys.exit(1)
+            
+        if int(parameter) == 0:
             thread_count = 2
             if check_subprocess_data(subprocess_open(
                 get_command(r"show int", r"| grep '[eE]thernet' |grep 'external' |awk '{{ print $1 }}'"), 10)[0]):
@@ -310,7 +315,7 @@ def check_interface_thread():
                 logging_line()
             else:
                 logger.error('Thread_monitor cannot get interfaces info from stm server, please check!!')
-        elif int(parameter) == 1:
+        elif int(parameter) >= 1:
             thread_count = 4
             if check_subprocess_data(subprocess_open(
                 get_command(r"show int", r"| grep '[eE]thernet' |awk '{{ print $1 }}'"), 10)[0]):
@@ -346,8 +351,19 @@ def check_interface_thread():
 
         if thread_chk_count > thread_count * MUL:
             logger.info('No stm threads : start rebooting now...')
+            is_stm_started = False
             logging_line()
             reboot_system()
+        else:
+            if not check_subprocess_data(subprocess_open(
+                get_command(r"show int", r"| grep '[eE]thernet' |grep 'external' |awk '{{ print $1 }}'"), 10)[0]):
+                if apache_restart_count > 2:
+                    apache_restart_count = 0
+                    reboot_system()
+                else:
+                    logger.info("Try restart apache, count: {}".format(apache_restart_count))
+                    logging_line()
+                    restart_apache()
     # else:
     #     is_stm_started = False
     #     logger.error('Thread_monitor cannot get interfaces info from stm server, please check!!')
@@ -373,14 +389,16 @@ def main():
             check_interface_thread()
             time.sleep(stm_chk_interval)
         else:
-            logger.error("STM or APACHE is not running, Please check admin.")
-            if apache_restart_count > 7:
-                apache_restart_count = 0
-                reboot_system()
-            else:
-                logger.info("Try restart apache, count: {}".format(apache_restart_count))
-                logging_line()
-                restart_apache()
+            reboot_system()
+        # else:
+        #     logger.error("STM or APACHE is not running, Please check admin.")
+        #     if apache_restart_count > 7:
+        #         apache_restart_count = 0
+        #         reboot_system()
+        #     else:
+        #         logger.info("Try restart apache, count: {}".format(apache_restart_count))
+        #         logging_line()
+        #         restart_apache()
 
 make_logger()
 version = get_stm_version()

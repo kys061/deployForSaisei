@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #####################################
-# Last Date : 2020.3. 28            #
+# Last Date : 2020.8.13            #
 # Writer : yskang(kys061@gmail.com) #
 #####################################
 #
@@ -20,6 +20,13 @@ eth4_adminstatus="down"
 eth5_adminstatus="down"
 dumping_core="false"
 
+bp1_thread_status="down"
+bp2_thread_status="down"
+# id="cli_admin"
+# pass="cli_admin"
+id="__internal__"
+pass="__ssshhh__"
+
 # for 7.3
 pos_realint=11
 pos_pciaddr=11
@@ -32,9 +39,14 @@ pos_virt_index=11
 
 bump_type="cooper"
 model_type="small"
+cores_per_interface=$(echo 'show parameter' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |egrep 'cores_per_interface' |awk '{print $2}')
+bypass_type=$(lspci -m |grep Ether |grep X710 -o  | awk 'FNR == 1 {print}')
+if [ "$bypass_type" == "X710" ]; then
+bypass_type="gen3"
+else
+bypass_type="gen2"
+fi
 stm_status="false"
-id="cli_admin"
-pass="cli_admin"
 
 scripts_path="/etc/stmfiles/files/scripts/"
 # /sys/class/misc/caswell_bpgen2/slot1
@@ -130,147 +142,147 @@ fi
 for ((i = 0; i < $realint_count; i++)); do
   if [ $i == 0 ]; then
     if [ $version == "V7.1" ]; then
-            virt_port_1_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 1 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
+      virt_port_1_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 1 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
     else
-            virt_port_1_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 1 {print}')
+      virt_port_1_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 1 {print}')
     fi
     if [[ $virt_port_1_index == '' ]]; then
-            virt_port_1=''
-            real_port_1=''
+      virt_port_1=''
+      real_port_1=''
     else
-            if [ $version == "V7.1" ]; then
-                    virt_port_1=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_1_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
-                    real_port_1=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_1 | cut -d "," -f2)
-            else
-                    virt_port_1=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 1 {print}')
-                    real_port_1=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_1 | cut -d "," -f2)
-            fi
+      if [ $version == "V7.1" ]; then
+        virt_port_1=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_1_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
+        real_port_1=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_1 | cut -d "," -f2)
+      else
+        virt_port_1=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 1 {print}')
+        real_port_1=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_1 | cut -d "," -f2)
+      fi
     fi
   elif [ $i == 1 ]; then
     if [ $version == "V7.1" ]; then
-            virt_port_2_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 2 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
+      virt_port_2_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 2 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
     else
-            virt_port_2_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 2 {print}')
+      virt_port_2_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 2 {print}')
     fi
     if [[ $virt_port_2_index == '' ]]; then
-            virt_port_2=''
-            real_port_2=''
+      virt_port_2=''
+      real_port_2=''
     else
-            if [ $version == "V7.1" ]; then
-                    virt_port_2=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_2_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
-                    real_port_2=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_2 | cut -d "," -f2)
-            else
-                    virt_port_2=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 2 {print}')
-                    real_port_2=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_2 | cut -d "," -f2)
-            fi
+      if [ $version == "V7.1" ]; then
+        virt_port_2=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_2_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
+        real_port_2=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_2 | cut -d "," -f2)
+      else
+        virt_port_2=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 2 {print}')
+        real_port_2=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_2 | cut -d "," -f2)
+      fi
     fi
   elif [ $i == 2 ]; then
     if [ $version == "V7.1" ]; then
-            virt_port_3_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 3 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
+      virt_port_3_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 3 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
     else
-            virt_port_3_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 3 {print}')
+      virt_port_3_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 3 {print}')
     fi
     if [[ $virt_port_3_index == '' ]]; then
-            virt_port_3=$virt_port_1
-            real_port_3=$real_port_1
+      virt_port_3=$virt_port_1
+      real_port_3=$real_port_1
     else
-            if [ $version == "V7.1" ]; then
-                    virt_port_3=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_3_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
-                    real_port_3=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_3 | cut -d "," -f2)
-            else
-                    virt_port_3=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 3 {print}')
-                    real_port_3=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_3 | cut -d "," -f2)
-            fi
+      if [ $version == "V7.1" ]; then
+        virt_port_3=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_3_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
+        real_port_3=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_3 | cut -d "," -f2)
+      else
+        virt_port_3=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 3 {print}')
+        real_port_3=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_3 | cut -d "," -f2)
+      fi
     fi
   elif [ $i == 3 ]; then
     if [ $version == "V7.1" ]; then
-            virt_port_4_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 4 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
+      virt_port_4_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 4 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
     else
-            virt_port_4_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
+      virt_port_4_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
     fi
     if [[ $virt_port_4_index == '' ]]; then
-            virt_port_4=$virt_port_2
-            real_port_4=$real_port_2
+      virt_port_4=$virt_port_2
+      real_port_4=$real_port_2
     else
-            if [ $version == "V7.1" ]; then
-                    virt_port_4=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_4_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
-                    real_port_4=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_4 | cut -d "," -f2)
-            else
-                    virt_port_4=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 4 {print}')
-                    real_port_4=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_4 | cut -d "," -f2)
-            fi
+      if [ $version == "V7.1" ]; then
+        virt_port_4=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_4_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
+        real_port_4=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_4 | cut -d "," -f2)
+      else
+        virt_port_4=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 4 {print}')
+        real_port_4=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_4 | cut -d "," -f2)
+      fi
     fi
   elif [ $i == 4 ]; then
     if [ $version == "V7.1" ]; then
-            virt_port_5_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 4 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
+      virt_port_5_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 4 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
     else
-            virt_port_5_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
+      virt_port_5_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
     fi
     if [[ $virt_port_4_index == '' ]]; then
-            virt_port_5=$virt_port_1
-            real_port_5=$real_port_1
+      virt_port_5=$virt_port_1
+      real_port_5=$real_port_1
     else
-            if [ $version == "V7.1" ]; then
-                    virt_port_5=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_5_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
-                    real_port_5=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_5 | cut -d "," -f2)
-            else
-                    virt_port_5=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 5 {print}')
-                    real_port_5=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_5 | cut -d "," -f2)
-            fi
+      if [ $version == "V7.1" ]; then
+        virt_port_5=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_5_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
+        real_port_5=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_5 | cut -d "," -f2)
+      else
+        virt_port_5=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 5 {print}')
+        real_port_5=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_5 | cut -d "," -f2)
+      fi
     fi
   elif [ $i == 5 ]; then
     if [ $version == "V7.1" ]; then
-            virt_port_6_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 4 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
+      virt_port_6_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 4 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
     else
-            virt_port_6_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
+      virt_port_6_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
     fi
     if [[ $virt_port_6_index == '' ]]; then
-            virt_port_6=$virt_port_2
-            real_port_6=$real_port_2
+      virt_port_6=$virt_port_2
+      real_port_6=$real_port_2
     else
-            if [ $version == "V7.1" ]; then
-                    virt_port_6=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_6_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
-                    real_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_6 | cut -d "," -f2)
-            else
-                    virt_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 6 {print}')
-                    real_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_6 | cut -d "," -f2)
-            fi
+      if [ $version == "V7.1" ]; then
+        virt_port_6=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_6_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
+        real_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_6 | cut -d "," -f2)
+      else
+        virt_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 6 {print}')
+        real_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_6 | cut -d "," -f2)
+      fi
     fi
   elif [ $i == 6 ]; then
     if [ $version == "V7.1" ]; then
-            virt_port_7_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 7 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
+      virt_port_7_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 7 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
     else
-            virt_port_7_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
+      virt_port_7_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
     fi
     if [[ $virt_port_7_index == '' ]]; then
-            virt_port_7=$virt_port_1
-            real_port_7=$real_port_1
+      virt_port_7=$virt_port_1
+      real_port_7=$real_port_1
     else
-            if [ $version == "V7.1" ]; then
-                    virt_port_6=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_7_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
-                    real_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_7 | cut -d "," -f2)
-            else
-                    virt_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 7 {print}')
-                    real_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_7 | cut -d "," -f2)
-            fi
+      if [ $version == "V7.1" ]; then
+        virt_port_6=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_7_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
+        real_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_7 | cut -d "," -f2)
+      else
+        virt_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 7 {print}')
+        real_port_6=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_7 | cut -d "," -f2)
+      fi
     fi
   elif [ $i == 7 ]; then
     if [ $version == "V7.1" ]; then
-            virt_port_8_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 8 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
+      virt_port_8_index=$(snmpwalk -v 2c -c public localhost ifIndex | egrep 'INTEGER: [0-9]$' | awk 'FNR == 8 {print}' | cut -d " " -f1 | rev | cut -d "." -f1)
     else
-            virt_port_8_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
+      virt_port_8_index=$(echo 'show interfaces select interface system_interface uid' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | awk '{print $'$pos_virt_index'}' | awk 'FNR == 4 {print}')
     fi
     if [[ $virt_port_8_index == '' ]]; then
-            virt_port_8=$virt_port_2
-            real_port_8=$real_port_2
+      virt_port_8=$virt_port_2
+      real_port_8=$real_port_2
     else
-            if [ $version == "V7.1" ]; then
-                    virt_port_8=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_8_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
-                    real_port_8=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_8 | cut -d "," -f2)
-            else
-                    virt_port_8=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 6 {print}')
-                    real_port_8=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_8 | cut -d "," -f2)
-            fi
+      if [ $version == "V7.1" ]; then
+        virt_port_8=$(snmpwalk -v 2c -c public localhost ifName | grep -m 1 ifName.$virt_port_8_index | rev | cut -d " " -f1 | rev | fgrep -m 1 -v "." | tail -n 1)
+        real_port_8=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_8 | cut -d "," -f2)
+      else
+        virt_port_8=$(cat /etc/stm/system_virt_real_device.csv | grep virt -v | cut -d',' -f1 | awk 'FNR == 6 {print}')
+        real_port_8=$(cat /etc/stm/system_virt_real_device.csv | grep $virt_port_8 | cut -d "," -f2)
+      fi
     fi
   fi
 done
@@ -337,60 +349,60 @@ function check_model_type_enabled() {
 if [ $version == "V7.1" ]; then
   if [ $model_type == "tiny" ]; then
     if [ $1 -eq 1 ] && [ $2 -eq 1 ]; then
-      bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_1 | awk '{print $4}')
+      bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_1$ | awk '{print $4}')
     fi
     if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
-      bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_2 | awk '{print $4}')
+      bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_2$ | awk '{print $4}')
     fi
     if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-      bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_3 | awk '{print $4}')
+      bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_3$ | awk '{print $4}')
     fi
     if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-      bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_4 | awk '{print $4}')
+      bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_4$ | awk '{print $4}')
     fi
   else
     if [ $1 -eq 1 ] && [ $2 -eq 1 ]; then
-      bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_1 | awk '{print $4}')
+      bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_1$ | awk '{print $4}')
     fi
     if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
-      bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_2 | awk '{print $4}')
+      bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_2$ | awk '{print $4}')
     fi
     if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-      bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_3 | awk '{print $4}')
+      bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_3$ | awk '{print $4}')
     fi
     if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-      bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_4 | awk '{print $4}')
+      bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_4$ | awk '{print $4}')
     fi
   fi
 else
   if [ $model_type == "tiny" ]; then
     if [ $1 -eq 1 ] && [ $2 -eq 1 ]; then
-      bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_1 | awk '{print $6}')
+      bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_1$ | awk '{print $6}')
     fi
     if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
-      bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_2 | awk '{print $6}')
+      bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_2$ | awk '{print $6}')
     fi
     if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-      bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_3 | awk '{print $6}')
+      bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_3$ | awk '{print $6}')
     fi
     if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-      bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_4 | awk '{print $6}')
+      bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep Socket | grep $real_port_4$ | awk '{print $6}')
     fi
   else
     if [ $1 -eq 1 ] && [ $2 -eq 1 ]; then
-      bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_1 | awk '{print $6}')
+      bitw_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_1$ | awk '{print $6}')
     fi
     if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
-      bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_2 | awk '{print $6}')
+      bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_2$ | awk '{print $6}')
     fi
     if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-      bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_3 | awk '{print $6}')
+      bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_3$ | awk '{print $6}')
       if [ -z $bitw2_port_1_enable ]; then
         bitw2_port_1_enable='None'
       fi
     fi
     if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-      bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_4 | awk '{print $6}')
+      bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | grep ethernet | grep $real_port_4$ | awk '{print $6}')
       if [ -z $bitw2_port_2_enable ]; then
         bitw2_port_2_enable='None'
       fi
@@ -403,6 +415,7 @@ fi
 # check bump's status (default:two)
 #
 function check_bumps() {
+cores_per_interface=$(echo 'show parameter' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |egrep 'cores_per_interface' |awk '{print $2}')
 bitw_port_1=$virt_port_1
 bitw_port_2=$virt_port_2
 port3=$virt_port_3
@@ -492,12 +505,13 @@ fi
 # 1. check if each bump's ports is up and enabled or not,
 # 2. if bump's ports are not up or enabled, let status DOWN,
 # 3. if bump's ports are up and enabled, not thread hang of interface, let status UP
+# first segment
 if [ ! -z $bitw_port_2_adminstatus ]; then
   if [ "$bitw_port_1_adminstatus" == "up" ]; then
     if [ "$bitw_port_2_adminstatus" == "up" ]; then
       if [ "$bump_type" == "cooper" ]; then
-        if [ -d /sys/class/bypass/g3bp0 ]; then
-          if [ $bitw_port_1_enable == "enabled" ] && [ $bitw_port_2_enable == "enabled" ]; then
+        if [ $bitw_port_1_enable == "enabled" ] && [ $bitw_port_2_enable == "enabled" ]; then
+          if [ -d /sys/class/bypass/g3bp0 ]; then
             if [ $model_type == "tiny" ]; then
               # check interface thread hang
               if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
@@ -507,117 +521,301 @@ if [ ! -z $bitw_port_2_adminstatus ]; then
                 fi
               else
                 stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                  reboot
-                done
+                bp1_thread_status="down"
+                #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                  echo "stm thread is not found, plz reboot or enable bypass!!" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+                # done
               fi
             else
               # check interface thread hang
-              ps -elL | grep $virt_port_1 >/dev/null 2>&1
-              if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
-                bump1_operstatus="up"
-              else
-                stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                  reboot
-                done
-              fi
-            fi
-          fi
-          if [ -d /sys/class/bypass/g3bp1 ]; then
-            if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
-              if [ $model_type == "tiny" ]; then
-                # check interface thread hang
-                if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
-                  if ps -elL | grep $virt_port_4 >/dev/null 2>&1; then
-                    bump2_operstatus="up"
-                  fi
+              if [ "$cores_per_interface" == "0" ]; then
+                ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                # int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                if [ "${#ext_threads[@]}" == "1" ]; then
+                  bp1_thread_status="up"
+                  bump1_operstatus="up"
                 else
-                  stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
-                fi
-              else
-                # check interface thread hang
-                if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
-                  bump2_operstatus="up"
+                  bp1_thread_status="down"
+                fi                  
+              elif [ "$cores_per_interface" == "1" ]; then
+                ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                if [ "${#ext_threads[@]}" == "1" ] && [ "${#int_threads[@]}" == "1" ]; then
+                  bp1_thread_status="up"
+                  bump1_operstatus="up"
                 else
-                  stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  bp1_thread_status="down"
                 fi
-              fi
+              elif [ "$cores_per_interface" == "2" ]; then
+                ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                if [ "${#ext_threads[@]}" == "2" ] && [ "${#int_threads[@]}" == "2" ]; then
+                  bp1_thread_status="up"
+                  bump1_operstatus="up"
+                else
+                  bp1_thread_status="down"
+                fi
+              elif [ "$cores_per_interface" == "3" ]; then
+                ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                if [ "${#ext_threads[@]}" == "3" ] && [ "${#int_threads[@]}" == "3" ]; then
+                  bp1_thread_status="up"
+                  bump1_operstatus="up"                    
+                else
+                  bp1_thread_status="down"
+                fi
+              elif [ "$cores_per_interface" == "4" ]; then
+                ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                if [ "${#ext_threads[@]}" == "4" ] && [ "${#int_threads[@]}" == "4" ]; then
+                  bp1_thread_status="up"
+                  bump1_operstatus="up"                    
+                else
+                  bp1_thread_status="down"
+                fi
+              fi              
             fi
           fi
         fi
       else
-        for fiber_bump1_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment1_in_use")
-        do
-          if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/${fiber_bump1_slot_bypass:6} ]; then
-            if [ "$bitw_port_1_enable" == "enabled" ] && [ "$bitw_port_2_enable" == "enabled" ]; then
+        if [ "$bypass_type" == "gen3" ]; then
+          if [ $bitw_port_1_enable == "enabled" ] && [ $bitw_port_2_enable == "enabled" ]; then
+            if [ -d /sys/class/bypass/g3bp0 ]; then
               if [ $model_type == "tiny" ]; then
                 # check interface thread hang
                 if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
-                  if ps -elL | grep $virt_port_2 >/dev/null 2>&1; then
+                  ps -elL | grep $virt_port_2 >/dev/null 2>&1
+                  if [ $? -eq 0 ]; then
                     bump1_operstatus="up"
                   fi
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  bp1_thread_status="down"
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    echo "stm thread is not found, plz reboot or enable bypass!!" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+                  # done
                 fi
               else
-                # check interface thread hang
-                if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
-                  bump1_operstatus="up"
-                else
-                  stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                # check interface thread hang              
+                if [ "$cores_per_interface" == "0" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                  # int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                  # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                  if [ "${#ext_threads[@]}" == "1" ]; then
+                    bp1_thread_status="up"
+                    bump1_operstatus="up"
+                  else
+                    bp1_thread_status="down"
+                  fi                  
+                elif [ "$cores_per_interface" == "1" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                  int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                  # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                  if [ "${#ext_threads[@]}" == "1" ] && [ "${#int_threads[@]}" == "1" ]; then
+                    bp1_thread_status="up"
+                    bump1_operstatus="up"
+                  else
+                    bp1_thread_status="down"
+                  fi
+                elif [ "$cores_per_interface" == "2" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                  int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                  # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                  if [ "${#ext_threads[@]}" == "2" ] && [ "${#int_threads[@]}" == "2" ]; then
+                    bp1_thread_status="up"
+                    bump1_operstatus="up"
+                  else
+                    bp1_thread_status="down"
+                  fi
+                elif [ "$cores_per_interface" == "3" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                  int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                  # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                  if [ "${#ext_threads[@]}" == "3" ] && [ "${#int_threads[@]}" == "3" ]; then
+                    bp1_thread_status="up"
+                    bump1_operstatus="up"                    
+                  else
+                    bp1_thread_status="down"
+                  fi
+                elif [ "$cores_per_interface" == "4" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                  int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                  # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                  if [ "${#ext_threads[@]}" == "4" ] && [ "${#int_threads[@]}" == "4" ]; then
+                    bp1_thread_status="up"
+                    bump1_operstatus="up"                    
+                  else
+                    bp1_thread_status="down"
+                  fi
                 fi
               fi
             fi
           fi
-        done
+        else
+          for fiber_bump1_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment1_in_use")
+          do
+            if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/${fiber_bump1_slot_bypass:6} ]; then
+              if [ "$bitw_port_1_enable" == "enabled" ] && [ "$bitw_port_2_enable" == "enabled" ]; then
+                if [ $model_type == "tiny" ]; then
+                  # check interface thread hang
+                  if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
+                    if ps -elL | grep $virt_port_2 >/dev/null 2>&1; then
+                      bump1_operstatus="up"
+                    fi
+                  else
+                    stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
+                    bp1_thread_status="down"
+                    #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                      echo "stm thread is not found, plz reboot or enable bypass!!" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+                    # done
+                  fi
+                else
+                  # check interface thread hang
+                  if [ "$cores_per_interface" == "0" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                    # int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "1" ]; then
+                      bp1_thread_status="up"
+                      bump1_operstatus="up"
+                    else
+                      bp1_thread_status="down"
+                    fi                  
+                  elif [ "$cores_per_interface" == "1" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "1" ] && [ "${#int_threads[@]}" == "1" ]; then
+                      bp1_thread_status="up"
+                      bump1_operstatus="up"
+                    else
+                      bp1_thread_status="down"
+                    fi
+                  elif [ "$cores_per_interface" == "2" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "2" ] && [ "${#int_threads[@]}" == "2" ]; then
+                      bp1_thread_status="up"
+                      bump1_operstatus="up"
+                    else
+                      bp1_thread_status="down"
+                    fi
+                  elif [ "$cores_per_interface" == "3" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "3" ] && [ "${#int_threads[@]}" == "3" ]; then
+                      bp1_thread_status="up"
+                      bump1_operstatus="up"                    
+                    else
+                      bp1_thread_status="down"
+                    fi
+                  elif [ "$cores_per_interface" == "4" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_1 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_2 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "4" ] && [ "${#int_threads[@]}" == "4" ]; then
+                      bp1_thread_status="up"
+                      bump1_operstatus="up"                    
+                    else
+                      bp1_thread_status="down"
+                    fi
+                  fi                       
+                fi
+              fi
+            fi
+          done        
+        fi      
       fi
     fi
   fi
 fi
-
+# second segment
 if [ ! -z $bitw2_port_2_adminstatus ]; then
   if [ "$bitw2_port_1_adminstatus" == "up" ]; then
     if [ "$bitw2_port_2_adminstatus" == "up" ]; then
       if [ "$bump2_type" == "cooper" ]; then
-        if [ -d /sys/class/bypass/g3bp0 ]; then
-          if [ "$bitw_port_1_enable" == "enabled" ] && [ "$bitw_port_2_enable" == "enabled" ]; then
-            if [ $model_type == "tiny" ]; then
-              # check interface thread hang
-              if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
-                      if ps -elL | grep $virt_port_2 >/dev/null 2>&1; then
-                              bump1_operstatus="up"
-                      fi
-              else
-                      stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                      for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                              reboot
-                      done
-              fi
-            else
-              # check interface thread hang
-              if ps -elL | grep $virt_port_1 >/dev/null 2>&1; then
-                      bump1_operstatus="up"
-              else
-                      stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                      for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                              reboot
-                      done
+        if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
+            if [ -d /sys/class/bypass/g3bp1 ]; then
+              if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
+                if [ $model_type == "tiny" ]; then
+                  # check interface thread hang
+                  if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
+                    if ps -elL | grep $virt_port_4 >/dev/null 2>&1; then
+                      bump2_operstatus="up"
+                    fi
+                  else
+                    stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
+                    bp2_thread_status="down"
+                    #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                      echo "stm thread is not found, plz reboot or enable bypass!!" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+                    # done
+                  fi
+                else
+                  # check interface thread hang
+                  if [ "$cores_per_interface" == "0" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    # int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "1" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"
+                    else
+                      bp2_thread_status="down"
+                    fi                  
+                  elif [ "$cores_per_interface" == "1" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "1" ] && [ "${#int_threads[@]}" == "1" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"
+                    else
+                      bp2_thread_status="down"
+                    fi
+                  elif [ "$cores_per_interface" == "2" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "2" ] && [ "${#int_threads[@]}" == "2" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"
+                    else
+                      bp2_thread_status="down"
+                    fi
+                  elif [ "$cores_per_interface" == "3" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "3" ] && [ "${#int_threads[@]}" == "3" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"                    
+                    else
+                      bp2_thread_status="down"
+                    fi
+                  elif [ "$cores_per_interface" == "4" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "4" ] && [ "${#int_threads[@]}" == "4" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"                    
+                    else
+                      bp2_thread_status="down"
+                    fi
+                  fi                
+                fi
               fi
             fi
-          fi
+        fi
+      else
+        if [ "$bypass_type" == "gen3" ]; then
           if [ -d /sys/class/bypass/g3bp1 ]; then
             if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
               if [ $model_type == "tiny" ]; then
@@ -628,55 +826,143 @@ if [ ! -z $bitw2_port_2_adminstatus ]; then
                   fi
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  bp2_thread_status="down"
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    echo "stm thread is not found, plz reboot or enable bypass!!" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+                  # done
                 fi
               else
                 # check interface thread hang
-                if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
-                  bump2_operstatus="up"
-                else
-                  stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
-                fi
+                if [ "$cores_per_interface" == "0" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                  # int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                  # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                  if [ "${#ext_threads[@]}" == "1" ]; then
+                    bp2_thread_status="up"
+                    bump2_operstatus="up"
+                  else
+                    bp2_thread_status="down"
+                  fi                  
+                elif [ "$cores_per_interface" == "1" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                  int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                  # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                  if [ "${#ext_threads[@]}" == "1" ] && [ "${#int_threads[@]}" == "1" ]; then
+                    bp2_thread_status="up"
+                    bump2_operstatus="up"
+                  else
+                    bp2_thread_status="down"
+                  fi                
+                elif [ "$cores_per_interface" == "2" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                  int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                  
+                  if [ "${#ext_threads[@]}" == "2" ] && [ "${#int_threads[@]}" == "2" ]; then
+                    bp2_thread_status="up"
+                    bump2_operstatus="up"
+                  else
+                    bp2_thread_status="down"
+                  fi
+                elif [ "$cores_per_interface" == "3" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                  int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                  # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                  if [ "${#ext_threads[@]}" == "3" ] && [ "${#int_threads[@]}" == "3" ]; then
+                    bp2_thread_status="up"
+                    bump2_operstatus="up"                    
+                  else
+                    bp2_thread_status="down"
+                  fi
+                elif [ "$cores_per_interface" == "4" ]; then
+                  ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                  int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                  # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                  if [ "${#ext_threads[@]}" == "4" ] && [ "${#int_threads[@]}" == "4" ]; then
+                    bp2_thread_status="up"
+                    bump2_operstatus="up"                    
+                  else
+                    bp2_thread_status="down"
+                  fi
+                fi                 
               fi
             fi
-          fi
-        fi
-      else
-        for fiber_bump2_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep $fiber_segment2_in_use)
-        do
-          if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6} ]; then
-            if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
-              if [ $model_type == "tiny" ]; then
-                # check interface thread hang
-                if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
-                  if ps -elL | grep $virt_port_4 >/dev/null 2>&1; then
-                    bump2_operstatus="up"
+          fi                  
+        else
+          for fiber_bump2_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep $fiber_segment2_in_use)
+          do
+            if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6} ]; then
+              if [ "$bitw2_port_1_enable" == "enabled" ] && [ "$bitw2_port_2_enable" == "enabled" ]; then
+                if [ $model_type == "tiny" ]; then
+                  # check interface thread hang
+                  if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
+                    if ps -elL | grep $virt_port_4 >/dev/null 2>&1; then
+                      bump2_operstatus="up"
+                    fi
+                  else
+                    stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
+                    bp2_thread_status="down"
+                    #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                      echo "stm thread is not found, plz reboot or enable bypass!!" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+                    # done
                   fi
                 else
-                  stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
-                fi
-              else
-                # check interface thread hang
-                if ps -elL | grep $virt_port_3 >/dev/null 2>&1; then
-                  bump2_operstatus="up"
-                else
-                  stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  # check interface thread hang
+                  if [ "$cores_per_interface" == "0" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    # int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "1" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"
+                    else
+                      bp2_thread_status="down"
+                    fi                  
+                  elif [ "$cores_per_interface" == "1" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "1" ] && [ "${#int_threads[@]}" == "1" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"
+                    else
+                      bp2_thread_status="down"
+                    fi                  
+                  elif [ "$cores_per_interface" == "2" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    
+                    if [ "${#ext_threads[@]}" == "2" ] && [ "${#int_threads[@]}" == "2" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"
+                    else
+                      bp2_thread_status="down"
+                    fi
+                  elif [ "$cores_per_interface" == "3" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "3" ] && [ "${#int_threads[@]}" == "3" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"                    
+                    else
+                      bp2_thread_status="down"
+                    fi
+                  elif [ "$cores_per_interface" == "4" ]; then
+                    ext_threads=($(ps -elL | grep $virt_port_3 | awk '{print $15}'))
+                    int_threads=($(ps -elL | grep $virt_port_4 | awk '{print $15}'))
+                    # if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+                    if [ "${#ext_threads[@]}" == "4" ] && [ "${#int_threads[@]}" == "4" ]; then
+                      bp2_thread_status="up"
+                      bump2_operstatus="up"                    
+                    else
+                      bp2_thread_status="down"
+                    fi
+                  fi 
                 fi
               fi
             fi
-          fi
-        done
+          done        
+        fi
       fi
     fi
   fi
@@ -758,49 +1044,73 @@ if [ $1 -eq 1 ]; then
       fi
     fi
   else
-    for fiber_bump1_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment1_in_use"); do
-      if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/${fiber_bump1_slot_bypass:6} ]; then
-        cd /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/
-        bump1_bypass_fiber_status=$(cat ${fiber_bump1_slot_bypass:6})
-        if [ "$bump1_bypass_fiber_status" != "2" ]; then
+    if [ "$bypass_type" == "gen3" ]; then
+      if [ -d /sys/class/bypass/g3bp0 ]; then
+        cd /sys/class/bypass/g3bp0
+        bump1_bypass_status=$(cat bypass)
+        if [ "$bump1_bypass_status" != "b" ]; then
           echo "Enabling bypasses on bump1 " | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
-          echo 2 > ${fiber_bump1_slot_bypass:6}
-          echo 1 > nextboot0
-          echo 1 > nextboot1
-          echo 1 > bpe0
-          echo 1 > bpe1
+          echo b > bypass
+          echo 1 > nextboot
         fi
-      fi
-    done
+      fi    
+    else
+      for fiber_bump1_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment1_in_use"); do
+        if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/${fiber_bump1_slot_bypass:6} ]; then
+          cd /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/
+          bump1_bypass_fiber_status=$(cat ${fiber_bump1_slot_bypass:6})
+          if [ "$bump1_bypass_fiber_status" != "2" ]; then
+            echo "Enabling bypasses on bump1 " | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+            echo 2 > ${fiber_bump1_slot_bypass:6}
+            echo 1 > nextboot0
+            echo 1 > nextboot1
+            echo 1 > bpe0
+            echo 1 > bpe1
+          fi
+        fi
+      done    
+    fi
   fi
 fi
 # second bump
 if [ $1 -eq 2 ]; then
   if [ "$bump2_type" == "cooper" ]; then
     if [ -d /sys/class/bypass/g3bp1 ]; then
-    cd /sys/class/bypass/g3bp1
-    bump2_bypass_status=$(cat bypass)
-    if [ "$bump2_bypass_status" != "b" ]; then
-      echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
-      echo b > bypass
-      echo 1 > nextboot
-    fi
-  fi
-  else
-    for fiber_bump2_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment2_in_use"); do
-      if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6} ]; then
-        cd /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/
-        bump2_bypass_fiber_status=$(cat ${fiber_bump2_slot_bypass:6})
-        if [ "$bump2_bypass_fiber_status" != "2" ]; then
-          echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
-          echo 2 > ${fiber_bump2_slot_bypass:6}
-          echo 1 > nextboot0
-          echo 1 > nextboot1
-          echo 1 > bpe0
-          echo 1 > bpe1
-        fi
+      cd /sys/class/bypass/g3bp1
+      bump2_bypass_status=$(cat bypass)
+      if [ "$bump2_bypass_status" != "b" ]; then
+        echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+        echo b > bypass
+        echo 1 > nextboot
       fi
-    done
+    fi
+  else
+    if [ "$bypass_type" == "gen3" ]; then
+      if [ -d /sys/class/bypass/g3bp1 ]; then
+        cd /sys/class/bypass/g3bp1
+        bump2_bypass_status=$(cat bypass)
+        if [ "$bump2_bypass_status" != "b" ]; then
+          echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+          echo b > bypass
+          echo 1 > nextboot
+        fi
+      fi  
+    else
+      for fiber_bump2_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment2_in_use"); do
+        if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6} ]; then
+          cd /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/
+          bump2_bypass_fiber_status=$(cat ${fiber_bump2_slot_bypass:6})
+          if [ "$bump2_bypass_fiber_status" != "2" ]; then
+            echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+            echo 2 > ${fiber_bump2_slot_bypass:6}
+            echo 1 > nextboot0
+            echo 1 > nextboot1
+            echo 1 > bpe0
+            echo 1 > bpe1
+          fi
+        fi
+      done
+    fi
   fi
 fi
 }
@@ -816,11 +1126,6 @@ function enable_copper_module()
 
 function disable_portwell_bypass()
 {
-copper_bypass_mod_installed=$(/sbin/lsmod | grep "caswell_bpgen3")
-if [ -z "$copper_bypass_mod_installed" ]; then
-  cd /opt/stm/bypass_drivers/portwell_kr/src/driver
-  insmod caswell_bpgen3.ko
-fi
 # first bump
 if [ $1 -eq 1 ]; then
   if [ "$bump_type" == "cooper" ]; then
@@ -834,6 +1139,17 @@ if [ $1 -eq 1 ]; then
       fi
     fi
   else
+    if [ "$bypass_type" == "gen3" ]; then
+      if [ -d /sys/class/bypass/g3bp0 ]; then
+        cd /sys/class/bypass/g3bp0
+        bypass_status=$(cat bypass)
+        if [ "$bypass_status" != "n" ]; then
+          echo "Disabling bypass on bump1" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+          echo 1 >func
+          echo n >bypass
+        fi
+      fi
+    else
     for fiber_bump1_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment1_in_use"); do
       if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/${fiber_bump1_slot_bypass:6} ]; then
         cd /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/
@@ -844,6 +1160,7 @@ if [ $1 -eq 1 ]; then
         fi
       fi
     done
+    fi
   fi
 fi
 # second bump
@@ -859,102 +1176,120 @@ if [ $1 -eq 2 ]; then
       fi
     fi
   else
-    for fiber_bump2_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment2_in_use"); do
-      if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6} ]; then
-        cd /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/
-        bypass_status=$(cat ${fiber_bump2_slot_bypass:6})
-        if [ "$bypass_status" != "0" ]; then
+    if [ "$bypass_type" == "gen3" ]; then
+      if [ -d /sys/class/bypass/g3bp1 ]; then
+        cd /sys/class/bypass/g3bp1
+        bypass_status=$(cat bypass)
+        if [ "$bypass_status" != "n" ]; then
           echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
-          echo 0 > ${fiber_bump2_slot_bypass:6}
+          echo 1 >func
+          echo n >bypass
         fi
       fi
-    done
+    else
+      for fiber_bump2_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment2_in_use"); do
+        if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6} ]; then
+          cd /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/
+          bypass_status=$(cat ${fiber_bump2_slot_bypass:6})
+          if [ "$bypass_status" != "0" ]; then
+            echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+            echo 0 > ${fiber_bump2_slot_bypass:6}
+          fi
+        fi
+      done
+    fi
   fi
 fi
 }
 
 function fiber_module_check()
 {
-if [ "$bump_type" == "1Gfiber" ] || [ "$bump_type" == "10Gfiber" ]; then
-  if [ -d /opt/stm/bypass_drivers/portwell_fiber/driver ]; then
-    cd /opt/stm/bypass_drivers/portwell_fiber/driver
+if [ "$bypass_type" == "gen3" ]; then
+  echo "Dont need to check fiber module, already gen3 type" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+else
+  if [ "$bump_type" == "1Gfiber" ] || [ "$bump_type" == "10Gfiber" ]; then
+    if [ -d /opt/stm/bypass_drivers/portwell_fiber/driver ]; then
+      cd /opt/stm/bypass_drivers/portwell_fiber/driver
 
-    bypass_mod_installed=$(/sbin/lsmod | grep "network_bypass")
-    network_bypass=$(lsmod | grep network_bypass | awk '{ print $1 }')
-    i2c_i801=$(lsmod | grep i2c_i801 | awk '{ print $1 }')
-    if [ ! -z "$bypass_mod_installed" ]; then
-      rmmod network_bypass
+      bypass_mod_installed=$(/sbin/lsmod | grep "network_bypass")
+      network_bypass=$(lsmod | grep network_bypass | awk '{ print $1 }')
+      i2c_i801=$(lsmod | grep i2c_i801 | awk '{ print $1 }')
+      # if [ -z "$bypass_mod_installed" ]; then
+      #   rmmod network_bypass
+      # fi
+      if [ -z $i2c_i801 ]; then
+        modprobe i2c-i801
+      fi
+      if [ -z $network_bypass ]; then
+        insmod network-bypass.ko board=$board
+      fi
     fi
-    if [ -z $i2c_i801 ]; then
-      modprobe i2c-i801
-    fi
-    if [ -z $network_bypass ]; then
-      insmod network-bypass.ko board=$board
-    fi
-  fi
-  sleep 5
+    sleep 5
 
-  echo 'slotNum:bypassNum' > /etc/stm/system_fiber_slots
-  fiber_slot0=($(ls /sys/class/misc/caswell_bpgen2/ |egrep slot0 -o))
-  fiber_slot1=($(ls /sys/class/misc/caswell_bpgen2/ |egrep slot1 -o))
-  fiber_slot2=($(ls /sys/class/misc/caswell_bpgen2/ |egrep slot2 -o))
-  fiber_slot3=($(ls /sys/class/misc/caswell_bpgen2/ |egrep slot3 -o))
-  if [ -z $fiber_slot0 ]; then
-    fiber_slot0=None
-  else
-    if ls /sys/class/misc/caswell_bpgen2/$fiber_slot0/ |egrep bypass0 -o >/dev/null 2>&1; then
-      fiber_slot0_bypass0=($fiber_slot0:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot0/ |egrep bypass0 -o ))
-      echo "$fiber_slot0_bypass0" >> /etc/stm/system_fiber_slots
-    fi
+    echo 'slotNum:bypassNum' > /etc/stm/system_fiber_slots
+    fiber_slot0=($(ls /sys/class/misc/caswell_bpgen2/ |egrep slot0 -o))
+    fiber_slot1=($(ls /sys/class/misc/caswell_bpgen2/ |egrep slot1 -o))
+    fiber_slot2=($(ls /sys/class/misc/caswell_bpgen2/ |egrep slot2 -o))
+    fiber_slot3=($(ls /sys/class/misc/caswell_bpgen2/ |egrep slot3 -o))
+    if [ -z $fiber_slot0 ]; then
+      fiber_slot0=None
+    else
+      if ls /sys/class/misc/caswell_bpgen2/$fiber_slot0/ |egrep bypass0 -o >/dev/null 2>&1; then
+        fiber_slot0_bypass0=($fiber_slot0:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot0/ |egrep bypass0 -o ))
+        echo "$fiber_slot0_bypass0" >> /etc/stm/system_fiber_slots
+      fi
 
-    if ls /sys/class/misc/caswell_bpgen2/$fiber_slot0/ |egrep bypass1 -o >/dev/null 2>&1; then
-      fiber_slot0_bypass1=($fiber_slot0:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot0/ |egrep bypass1 -o ))
-      echo "$fiber_slot0_bypass1" >> /etc/stm/system_fiber_slots
-    fi
-  fi
-
-  if [ -z $fiber_slot1 ]; then
-    fiber_slot1=None
-  else
-    if ls /sys/class/misc/caswell_bpgen2/$fiber_slot1/ |egrep bypass0 -o >/dev/null 2>&1; then
-      fiber_slot1_bypass0=($fiber_slot1:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot1/ |egrep bypass0 -o ))
-      echo "$fiber_slot1_bypass0" >> /etc/stm/system_fiber_slots
+      if ls /sys/class/misc/caswell_bpgen2/$fiber_slot0/ |egrep bypass1 -o >/dev/null 2>&1; then
+        fiber_slot0_bypass1=($fiber_slot0:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot0/ |egrep bypass1 -o ))
+        echo "$fiber_slot0_bypass1" >> /etc/stm/system_fiber_slots
+      fi
     fi
 
-    if ls /sys/class/misc/caswell_bpgen2/$fiber_slot1/ |egrep bypass1 -o >/dev/null 2>&1; then
-      fiber_slot1_bypass1=($fiber_slot1:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot1/ |egrep bypass1 -o ))
-      echo "$fiber_slot1_bypass1" >> /etc/stm/system_fiber_slots
-    fi
-  fi
+    if [ -z $fiber_slot1 ]; then
+      fiber_slot1=None
+    else
+      if ls /sys/class/misc/caswell_bpgen2/$fiber_slot1/ |egrep bypass0 -o >/dev/null 2>&1; then
+        fiber_slot1_bypass0=($fiber_slot1:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot1/ |egrep bypass0 -o ))
+        echo "$fiber_slot1_bypass0" >> /etc/stm/system_fiber_slots
+      fi
 
-  if [ -z $fiber_slot2 ]; then
-    fiber_slot2=None
-  else
-    if ls /sys/class/misc/caswell_bpgen2/$fiber_slot2/ |egrep bypass0 -o >/dev/null 2>&1; then
-      fiber_slot2_bypass0=($fiber_slot2:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot2/ |egrep bypass0 -o ))
-      echo "$fiber_slot2_bypass0" >> /etc/stm/system_fiber_slots
-    fi
-
-    if ls /sys/class/misc/caswell_bpgen2/$fiber_slot2/ |egrep bypass1 -o >/dev/null 2>&1; then
-      fiber_slot2_bypass1=($fiber_slot2:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot2/ |egrep bypass1 -o ))
-      echo "$fiber_slot2_bypass1" >> /etc/stm/system_fiber_slots
-    fi
-  fi
-
-  if [ -z $fiber_slot3 ]; then
-    fiber_slot3=None
-  else
-    if ls /sys/class/misc/caswell_bpgen2/$fiber_slot3/ |egrep bypass0 -o >/dev/null 2>&1; then
-      fiber_slot3_bypass0=($fiber_slot3:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot3/ |egrep bypass0 -o ))
-      echo "$fiber_slot3_bypass0" >> /etc/stm/system_fiber_slots
+      if ls /sys/class/misc/caswell_bpgen2/$fiber_slot1/ |egrep bypass1 -o >/dev/null 2>&1; then
+        fiber_slot1_bypass1=($fiber_slot1:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot1/ |egrep bypass1 -o ))
+        echo "$fiber_slot1_bypass1" >> /etc/stm/system_fiber_slots
+      fi
     fi
 
-    if ls /sys/class/misc/caswell_bpgen2/$fiber_slot3/ |egrep bypass1 -o >/dev/null 2>&1; then
-      fiber_slot3_bypass1=($fiber_slot3:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot3/ |egrep bypass1 -o ))
-      echo "$fiber_slot3_bypass1" >> /etc/stm/system_fiber_slots
+    if [ -z $fiber_slot2 ]; then
+      fiber_slot2=None
+    else
+      if ls /sys/class/misc/caswell_bpgen2/$fiber_slot2/ |egrep bypass0 -o >/dev/null 2>&1; then
+        fiber_slot2_bypass0=($fiber_slot2:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot2/ |egrep bypass0 -o ))
+        echo "$fiber_slot2_bypass0" >> /etc/stm/system_fiber_slots
+      fi
+
+      if ls /sys/class/misc/caswell_bpgen2/$fiber_slot2/ |egrep bypass1 -o >/dev/null 2>&1; then
+        fiber_slot2_bypass1=($fiber_slot2:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot2/ |egrep bypass1 -o ))
+        echo "$fiber_slot2_bypass1" >> /etc/stm/system_fiber_slots
+      fi
+    fi
+
+    if [ -z $fiber_slot3 ]; then
+      fiber_slot3=None
+    else
+      if ls /sys/class/misc/caswell_bpgen2/$fiber_slot3/ |egrep bypass0 -o >/dev/null 2>&1; then
+        fiber_slot3_bypass0=($fiber_slot3:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot3/ |egrep bypass0 -o ))
+        echo "$fiber_slot3_bypass0" >> /etc/stm/system_fiber_slots
+      fi
+
+      if ls /sys/class/misc/caswell_bpgen2/$fiber_slot3/ |egrep bypass1 -o >/dev/null 2>&1; then
+        fiber_slot3_bypass1=($fiber_slot3:$(ls /sys/class/misc/caswell_bpgen2/$fiber_slot3/ |egrep bypass1 -o ))
+        echo "$fiber_slot3_bypass1" >> /etc/stm/system_fiber_slots
+      fi
     fi
   fi
 fi
+
+
 }
 
 function bypass_status_check()
@@ -971,23 +1306,36 @@ if [ "$bump_type" == "cooper" ]; then
     bitw2_cooper_bypass='None'
   fi
 else
-  if [ "$fiber_segment1_in_use" = "None" ]; then
-    bitw1_fiber_bypass='None'
+  if [ "$bypass_type" == "gen3" ]; then
+    if [ -d /sys/class/bypass/g3bp0 ]; then
+      bitw1_fiber_bypass=$(cat /sys/class/bypass/g3bp0/bypass)
+    else
+      bitw1_fiber_bypass='None'
+    fi
+    if [ -d /sys/class/bypass/g3bp1 ]; then
+      bitw2_fiber_bypass=$(cat /sys/class/bypass/g3bp1/bypass)
+    else
+      bitw2_fiber_bypass='None'
+    fi  
   else
-    for fiber_bump1_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment1_in_use"); do
-      if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/${fiber_bump1_slot_bypass:6} ]; then
-        bitw1_fiber_bypass=$(cat /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/${fiber_bump1_slot_bypass:6})
-      fi
-    done
-  fi
-  if [ "$fiber_segment2_in_use" = "None" ]; then
-    bitw2_fiber_bypass='None'
-  else
-    for fiber_bump2_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment2_in_use"); do
-      if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6} ]; then
-        bitw2_fiber_bypass=$(cat /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6})
-      fi
-    done
+    if [ "$fiber_segment1_in_use" = "None" ]; then
+      bitw1_fiber_bypass='None'
+    else
+      for fiber_bump1_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment1_in_use"); do
+        if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/${fiber_bump1_slot_bypass:6} ]; then
+          bitw1_fiber_bypass=$(cat /sys/class/misc/caswell_bpgen2/${fiber_bump1_slot_bypass:0:5}/${fiber_bump1_slot_bypass:6})
+        fi
+      done
+    fi
+    if [ "$fiber_segment2_in_use" = "None" ]; then
+      bitw2_fiber_bypass='None'
+    else
+      for fiber_bump2_slot_bypass in $(cat /etc/stm/system_fiber_slots |egrep "$fiber_segment2_in_use"); do
+        if [ -e /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6} ]; then
+          bitw2_fiber_bypass=$(cat /sys/class/misc/caswell_bpgen2/${fiber_bump2_slot_bypass:0:5}/${fiber_bump2_slot_bypass:6})
+        fi
+      done
+    fi  
   fi
 fi
 }
@@ -995,9 +1343,14 @@ fi
 function print_bypass_status()
 {
 if [ "$bump_type" == "cooper" ]; then
-        echo "cooper bypass status(bump1, bump2 | b=bypass, n=normal) : "$bitw1_cooper_bypass","$bitw2_cooper_bypass | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+  echo "cooper bypass status(bump1, bump2 | b=bypass, n=normal) : "$bitw1_cooper_bypass","$bitw2_cooper_bypass | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
 else
-        echo "fiber bypass status(bump1, bump2 | 2=bypass, 0=normal) : "$bitw1_fiber_bypass","$bitw2_fiber_bypass | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+  if [ "$bypass_type" == "gen3" ]; then
+    echo "fiber(gen3) bypass status(bump1, bump2 | b=bypass, n=normal) : "$bitw1_fiber_bypass","$bitw2_fiber_bypass | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log  
+  else
+    echo "fiber(gen2) bypass status(bump1, bump2 | 2=bypass, 0=normal) : "$bitw1_fiber_bypass","$bitw2_fiber_bypass | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+  fi
+    
 fi
 if [ -z $bitw_port_1_enable ]; then
   bitw_port_1_enable="None"
@@ -1017,6 +1370,7 @@ echo "model type : "$model_type | awk '{ print strftime(), $0; fflush() }' >>/va
 echo "bump1's type, bump2's type : "$bump_type","$bump2_type | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
 echo "segment count : "$seg_count | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
 echo "stm's operstatus : "$stm_operstatus", bump1's status : "$bump1_operstatus" , bump2's status : "$bump2_operstatus | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
+echo "bump1's thread : "$bp1_thread_status" , bump2's thread : "$bp2_thread_status | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
 echo "===========================" | awk '{ print strftime(), $0; fflush() }' >>/var/log/stm_bypass.log
 }
 
@@ -1044,14 +1398,14 @@ while true; do
     enable_portwell_bypass 2
     check_bumps
   else
-    if [ "$bump1_operstatus" == "up" ]; then
+    if [ "$bump1_operstatus" == "up" ] && [ "$bp1_thread_status" == "up" ]; then
       disable_portwell_bypass 1
       check_bumps
     else
       enable_portwell_bypass 1
       check_bumps
     fi
-    if [ "$bump2_operstatus" == "up" ]; then
+    if [ "$bump2_operstatus" == "up" ] && [ "$bp2_thread_status" == "up" ]; then
       disable_portwell_bypass 2
       check_bumps
     else
@@ -1059,9 +1413,8 @@ while true; do
       check_bumps
     fi
   fi
-  # check bypass status
+
   bypass_status_check
-  # print bypass status
   print_bypass_status
   sleep 10
 done

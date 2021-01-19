@@ -1,0 +1,627 @@
+----------------------------------------------------------------------------
+        CASwell PMBus Linux Driver README File
+        Copyright(c) 2014 CASwell, Inc.
+----------------------------------------------------------------------------
+==================================================================
+Date: NOV 28 2018
+==================================================================
+
+[Introdution]:
+        CASwell PMBus Linux driver package offers power supply monitoring based
+on PMBus standard protocol. This package contains the driver and a sample
+utility.
+
+
+[Driver Building and Installation]
+        # cd src/driver/
+        # make
+        # insmod caswell-pmbus.ko
+
+Note:
+        If you want to cross compile drvier, you need to assign kernel source
+path (KSRC) and target gcc (CC)
+
+        # make KSRC=/usr/kernel/xx CC=/usr/local/tools/xx-gcc
+
+Note:
+        PMBus driver is based on standard linux I2C interface, please make
+sure I2C bus driver (i801) is loaded before loading PMBus driver.
+
+
+[Utility Building]:
+        # cd src/tool/
+        # make
+
+Note:
+        If you want to cross compile drvier, you need to assign target gcc (CC)
+
+        # make CC=/usr/local/tools/xx-gcc
+
+
+[Usage]
+        1. In the dirver, we provide several IOCTL commands for userspace.
+           You can develop your own utility in C language to monitor power
+           supply status.
+
+           IOCTL_PMBUS_READ_STS    : Read PMBus command
+           IOCTL_PMBUS_WRITE_STS   : Write PMBus command
+
+           Above IOCTL commands communicates with kernel via pmbus_iodata_t.
+
+           union pmb_data_u {
+                long value;
+                unsigned char string[MAX_COMMAND_DATA];
+           };
+
+           struct pmbus_iodata_t {
+                unsigned char devno;    // Device index
+                unsigned int opcmd;     // PMBus command address
+                union pmb_data_u data;  // Read/Write data
+           };
+
+        2. Loading Driver, when access psu that the default delay time is 0 msec.
+
+           # insmod caswell-pmbus.ko
+
+           User can also change the access PSU interval when loading driver.
+
+           # insmod caswell-pmbus.ko delay=<millisecond>
+
+               NOTE: Intel defined the PMBus spec as below:
+                     PSU shall be polled over 10 sample/sec while testing accuracy.
+                     CASwell suggest the access interval should be 100 msec.
+
+                     # insmod caswell-pmbus.ko delay=100
+
+[Sample Utility]
+        CASWELL provide a sample utility based on IOCTL APIs to monitor power supply
+status under src/tool. Because each power supply does not fully support all PMBus
+commands, we create several configuartion files to define supported commands for
+each power supply. The configuration files is placed under src/conf/, and
+supported power supply is written in SUPPORT_LIST.
+
+        For this sample utility, we load default poewr supply configuration from
+/etc/cas-well/psu/pmbus.conf. You can copy your power supply configuration
+file from src/conf to /etc/cas-well/psu, and rename as pmbus.conf. We also
+provide an option to replace default configuration file from a specific file.
+
+        The following is the usage of sample utility:
+
+        cas_pmb_ctrl [Option] [-m <Module Number>]
+        -d <configuration file>	: The path of PMBus configuration file.
+                                  The default is /etc/cas-well/psu/pmbus.conf
+        -w                      : Show word status
+        -v                      : Show output voltage
+        -V                      : Show input voltage
+        -i                      : Show output current
+        -I                      : Show input current
+        -t                      : Show temperature
+        -f                      : Show fan speed
+        -p                      : Show output power
+        -P                      : Show input power
+        -M                      : Show MFR information
+        -m                      : Show information of specific module <0-7>
+        -h                      : Show this message
+
+[Sample Script]
+    CASWELL also provide a sample script to monitor power supply
+status under src/script. Because backplane of each power supply does not
+fully support all I2C commands, we create several configuartion files to
+define supported commands for each power supply. The configuration files
+is placed under src/conf/, and supported power supply is written
+in SUPPORT_LIST.
+
+For this sample script, we load default poewr supply configuration from
+/etc/cas-well/psu/pmbus.conf. You can copy your power supply configuration
+file from src/conf to /etc/cas-well/psu, and rename as pmbus.conf. We also
+provide an option to replace default configuration file from a specific file.
+
+        The following is the usage of sample script:
+
+        psu_pmbus.sh [Option]
+        -d <configuration file>	: The path of PMBus configuration file.
+                                  The default is /etc/cas-well/psu/pmbus.conf
+        -w                      : Show word status
+        -v                      : Show output voltage
+        -V                      : Show input voltage
+        -i                      : Show output current
+        -I                      : Show input current
+        -t                      : Show temperature
+        -f                      : Show fan speed
+        -p                      : Show output power
+        -P                      : Show input power
+        -M                      : Show MFR information
+        -m                      : Show information of specific module <0-7>
+        -h                      : Show this message
+
+[Configuration Definition]
+
+        1. MODULE_PRESENT_MASK
+           This parameter indicates which modules in this power supply. The
+LSB represents first module (address: 0x58), and the next represents second
+module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex: MODULE_PRESENT_MASK=0x83
+
+        where 0x83 = 10000011b, it means this redundant power has two module
+(0x58, 0x59) and backplane (0x5F).
+
+
+        2. SENS_FMT
+           This parameter indicates what kind of data format uses for common
+sensor value except for output voltage. 0 is linear format, 1 is direct format.
+
+        Ex. SENS_FMT=0
+
+        It means the data format for common sensor value is linear format.
+
+
+        3. VOUT_FMT
+           This parameter indicates What kind of data format uses for output
+voltage. 1 is VID format , 2 is direct format and 3 is VOUT_MODE setting.
+
+        Ex. VOUT_FMT=3
+
+        It means the data format for output voltage is VOUT_MODE setting.
+
+
+        4. VOLTAGE_SOURCE
+           Voltage type divided into 5VSB, 3.3V, 5V, 12V. The LSB represents
+12V , and the next represents 5V, the third bit represents 3.3V. The MSB represents 5VSB.
+Seting 1 in the corresponding bit means this voltage represents in the power supply.
+
+        Ex. VOLTAGE_SOURCE=0x3
+
+        where VOLTAGE_SOURCE = 0011b, it means this power supoort 5V and 12V,
+not suuport 5VSB and 3.3V.
+
+
+        5. SUPPORT_WORD_MASK
+           This parameter indicates which modules support word status
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_WORD_MASK=0x83
+
+        where SUPPORT_WORD_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support word status.
+
+
+        6. SUPPORT_VOUT_MASK
+           This parameter indicates which modules support output voltage
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_VOUT_MASK=0x83
+
+        where SUPPORT_VOUT_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support voltage output.
+
+
+        7. SUPPORT_IOUT_MASK
+           This parameter indicates which modules support output current
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_IOUT_MASK=0x83
+
+        where SUPPORT_IOUT_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support output current.
+
+
+        8. SUPPORT_VIN_MASK
+           This parameter indicates which modules support input voltage
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_VIN_MASK=0x83
+
+        where SUPPORT_VIN_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support input voltage.
+
+
+        9. SUPPORT_IIN_MASK
+           This parameter indicates which modules support input current
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_VIN_MASK=0x83
+
+        where SUPPORT_VIN_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support input current.
+
+
+        10. SUPPORT_TEMP1_MASK
+            This parameter indicates which modules support temperature 1
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_TEMP1_MASK=0x83
+
+        where SUPPORT_TEMP1_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support temperature 1.
+
+
+        11. SUPPORT_TEMP2_MASK
+            This parameter indicates which modules support temperature 2
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_TEMP2_MASK=0x83
+
+        where SUPPORT_TEMP2_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support temperature 2.
+
+
+        12. SUPPORT_TEMP3_MASK
+            This parameter indicates which modules support temperature 3
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_TEMP3_MASK=0x83
+
+        where SUPPORT_TEMP3_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support temperature 3.
+
+
+        13. SUPPORT_FAN1_MASK
+           This parameter indicates which modules support fan 1 monitoring. The
+LSB represents first module (address: 0x58), and the next represents second
+module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_FAN1_MASK=0x83
+
+        where SUPPORT_FAN1_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support fan 1.
+
+
+        14. SUPPORT_FAN2_MASK
+           This parameter indicates which modules support fan 2 monitoring. The
+LSB represents first module (address: 0x58), and the next represents second
+module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_FAN2_MASK=0x83
+
+        where SUPPORT_FAN2_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support fan 2.
+
+
+        15. SUPPORT_FAN3_MASK
+           This parameter indicates which modules support fan 3 monitoring. The
+LSB represents first module (address: 0x58), and the next represents second
+module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_FAN3_MASK=0x83
+
+        where SUPPORT_FAN3_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support fan 3.
+
+
+        16. SUPPORT_FAN4_MASK
+           This parameter indicates which modules support fan 4 monitoring. The
+LSB represents first module (address: 0x58), and the next represents second
+module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_FAN4_MASK=0x83
+
+        where SUPPORT_FAN4_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support fan 4.
+
+
+        17. SUPPORT_POUT_MASK
+           This parameter indicates which modules support output power
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_POUT_MASK=0x83
+
+        where SUPPORT_POUT_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support output power.
+
+
+        18. SUPPORT_PIN_MASK
+	   This parameter indicates which modules support input power
+monitoring. The LSB represents first module (address: 0x58), and the next represents
+second module (address: 0x59), and so on. The MSB represents the backplane (address:
+0x5F). Setting 1 in the corresponding bit means this module represents in the
+power supply.
+
+        Ex. SUPPORT_PIN_MASK=0x83
+
+        where SUPPORT_PIN_MASK = 10000011b, it means two module(0x58, 0x59)
+and backplane (0x5F) support input power.
+
+
+        19. SUPPORT_STATUS_WORD_MASK (Command code: 0x79)
+           This parameter's each bit has its representative meaning.
+This parameter has 16bit,it divide into 8 high bit and 8 low bit.
+The LSB represents 8 low bit's first bit(NONE OF THE ABOVE), and the next
+represents 8 low bit's second bit(CML), and so on. The MSB represents the 8
+high bit's eighth bit(VOUT). This parameter's each bit follows PMBus Spec.The 16bit as follow.
+
+------------------------------------------------------------------------------------------
+Byte     Bit Number     Status Bit name                     Meaning
+------------------------------------------------------------------------------------------
+Low           7           VOUT             An output voltage fault or warning
+                                           has occurred.
+------------------------------------------------------------------------------------------
+              6           IOUT/POUT        An output current or output power
+                                           fault or warning has occurred.
+------------------------------------------------------------------------------------------
+              5           INPUT            An input voltage, input current, or
+                                           input power fault or warning has
+                                           occurred.
+------------------------------------------------------------------------------------------
+              4           MFR              A manufacturer specific fault or
+                                           warning has occurred.
+------------------------------------------------------------------------------------------
+              3           POWER_GOOD#      The POWER_GOOD signal, if present,
+                                           is negated.
+------------------------------------------------------------------------------------------
+              2           FANS             A fan or airflow fault or warning
+                                           has occurred.
+-------------------------------------------------------------------------------------------
+              1           OTHER            A bit in STATUS_OTHER is set
+-------------------------------------------------------------------------------------------
+              0           UNKNOWN          A fault type not given in bits [15:1]
+                                           of the SATUS_WORD has bee detected.
+-------------------------------------------------------------------------------------------
+High          7           BUSY             A fault was declared because the
+                                           device was busy and unable to respond.
+-------------------------------------------------------------------------------------------
+              6           OFF              This bit is asserted if the unit is
+                                           not providing power to the output, regardless
+                                           of the reason, including simply not being enabled.
+-------------------------------------------------------------------------------------------
+              5           VOUT_OV          An output overvoltage fault has
+                                           occurred.
+-------------------------------------------------------------------------------------------
+              4           IOUT_OC          An output overcurrent fault has
+                                           occurred.
+-------------------------------------------------------------------------------------------
+              3           VIN_UV           An input under voltage fault has
+                                           occurred.
+-------------------------------------------------------------------------------------------
+              2           TEMPERATURE      A temperature fault or warning has
+                                           occurred.
+-------------------------------------------------------------------------------------------
+              1           CML              A communications, memory or logic
+                                           fault has occurred.
+-------------------------------------------------------------------------------------------
+              0           NONE OF          A fault or warning not listed in
+                          THE ABOVE        bits [7:1] of this byte has
+                                           occurred.
+-------------------------------------------------------------------------------------------
+
+	Ex: SUPPORT_STATUS_WORD_MASK=0xEC76
+
+	where SUPPORT_STATUS_WORD = 1110 1100 0111 0110b, [bit: 0-7] it means the power
+supply support high byte(OFF, VOUT_OV, IOUT_OC, TEMPERATURE, CML), and [bit: 8-15] low byte
+(VOUT, IOUT/POUT, INPUT,  POWER_GOOD#, FANS).
+
+
+	20. SUPPORT_STATUS_VOUT_MASK (Command code: 0x7A)
+            This parameter's each bit has its representative meaning.
+This parameter has 8bit. The LSB represents first bit(VOUT Tracking Error), and the next
+represents second bit(TOFF_MAX Warning), and so on. The MSB represents the eighth bit (VOUT Overvoltage).
+This parameter's each bit follows PMBus Spec.The 8bit as follow.
+
+        ----------------------------------------------------------------------
+         Bit           Meaning
+        ----------------------------------------------------------------------
+          7            VOUT Overvoltage Fault
+        ----------------------------------------------------------------------
+          6            VOUT Overvoltage Warning
+        ----------------------------------------------------------------------
+          5            VOUT Under voltage Warning
+        ----------------------------------------------------------------------
+          4            VOUT Under voltage Fault
+        ----------------------------------------------------------------------
+          3            VOUT_MAX Warning (An attempt has been made to set
+                       the output voltage to value higher than allowed by the
+                       VOUT_MAX command.
+        ----------------------------------------------------------------------
+          2            TON_MAX_FAULT
+        ----------------------------------------------------------------------
+          1            TOFF_MAX Warning
+        ----------------------------------------------------------------------
+          0            VOUT Tracking Error
+        ----------------------------------------------------------------------
+
+        Ex: SUPPORT_STATUS_VOUT_MASK=0xf0
+
+        where SUPPORT_STATUS_VOUT_MASK=1111 0000b, it means the power supply
+support command(VOUT Overvoltage Fault, VOUT Overvoltage Warning, VOUT Under
+voltage Warning, VOUT Under voltage Fault) in this parameter.
+
+
+        21. SUPPORT_STATUS_IOUT_MASK (Command code: 0x7B)
+            This parameter's each bit has its representative meaning.
+This parameter has 8bit. The LSB represents first bit(POUT Overpower Warning),
+and the next represents second bit(POUT Overpower Fault), and so on.
+The MSB represents the eighth bit (IOUT Overcurrent Fault).
+This parameter's each bit follows PMBus Spec.The 8bit as follow.
+
+
+        ----------------------------------------------------------------------
+         Bit           Meaning
+        ----------------------------------------------------------------------
+          7            IOUT Overcurrent Fault
+        ----------------------------------------------------------------------
+          6            IOUT Overcurrent And Low Voltage Shutdown Fault
+        ----------------------------------------------------------------------
+          5            IOUT Overcurrent Warning
+        ----------------------------------------------------------------------
+          4            IOUT Undercurrent Fault
+        ----------------------------------------------------------------------
+          3            Current Share Fault
+        ----------------------------------------------------------------------
+          2            Power Limiting
+        ----------------------------------------------------------------------
+          1            POUT Overpower Fault
+        ----------------------------------------------------------------------
+          0            POUT Overpower Warning
+        ----------------------------------------------------------------------
+
+	Ex: SUPPORT_STATUS_IOUT_MASK=0xA0
+
+        where SUPPORT_STATUS_IOUT_MASK=1010 0000b, it means the power supply
+support command(IOUT Overvoltage Fault, IOUT Overcurrent Warning) in this parameter.
+
+
+        22. SUPPORT_STATUS_TEMP_MASK (Command Code: 0x7D)
+            This parameter's each bit has its representative meaning.
+This parameter has 8bit. The LSB represents first bit(Reserved),
+and the next represents second bit(Reserved), and so on.
+The MSB represents the eighth bit (Over temperature Fault).
+This parameter's each bit follows PMBus Spec.The 8bit as follow.
+
+
+        ----------------------------------------------------------------------
+         Bit           Meaning
+        ----------------------------------------------------------------------
+          7            Over temperature Fault
+        ----------------------------------------------------------------------
+          6            Over temperature Warning
+        ----------------------------------------------------------------------
+          5            Under temperature Warning
+        ----------------------------------------------------------------------
+          4            Under temperature Fault
+        ----------------------------------------------------------------------
+          3            Reserved
+        ----------------------------------------------------------------------
+          2            Reserved
+        ----------------------------------------------------------------------
+          1            Reserved
+        ----------------------------------------------------------------------
+          0            Reserved
+        ----------------------------------------------------------------------
+
+        Ex: SUPPORT_STATUS_TEMP_MASK=0xC0
+
+        where SUPPORT_STATUS_TEMP_MASK=1100 0000b, it means the power supply
+support command(Over temperature Fault, Over temperature Warning) in this parameter.
+
+
+        23. SUPPORT_STATUS_INPUT_MASK (Command Code: 0x7C)
+            This parameter's each bit has its representative meaning.
+This parameter has 8bit. The LSB represents first bit(PIN Over power Warning),
+and the next represents second bit(IIN Over current Warning), and so on.
+The MSB represents the eighth bit (VIN Over voltage Fault).
+This parameter's each bit follows PMBus Spec.The 8bit as follow.
+
+
+        ----------------------------------------------------------------------
+         Bit           Meaning
+        ----------------------------------------------------------------------
+          7            VIN Over voltage Fault
+        ----------------------------------------------------------------------
+          6            VIN Over voltage Warning
+        ----------------------------------------------------------------------
+          5            VIN Under voltage Warning
+        ----------------------------------------------------------------------
+          4            VIN Under voltage Fault
+        ----------------------------------------------------------------------
+          3            Unit Is Off For Insufficient Input Voltage
+        ----------------------------------------------------------------------
+          2            IIN Over current Fault
+        ----------------------------------------------------------------------
+          1            IIN Over current Warning
+        ----------------------------------------------------------------------
+          0            PIN Over power Warning
+        ----------------------------------------------------------------------
+
+        Ex: SUPPORT_STATUS_INPUT_MASK=0xC0
+
+        where SUPPORT_STATUS_INPUT_MASK=1100 0000b, it means the power supply
+support command(VIN Over voltage Fault, VIN Over voltage Warning) in this
+parameter.
+
+
+        24. SUPPORT_STATUS_FAN_MASK (Command Code: 0x81)
+            This parameter's each bit has its representative meaning.
+This parameter has 8bit. The LSB represents first bit(Airflow Warning),
+and the next represents second bit(Airflow Fault), and so on.
+The MSB represents the eighth bit (Fan 1 Fault).
+This parameter's each bit follows PMBus Spec.The 8bit as follow.
+
+
+        ----------------------------------------------------------------------
+         Bit           Meaning
+        ----------------------------------------------------------------------
+          7            Fan 1 Fault
+        ----------------------------------------------------------------------
+          6            Fan 2 Fault
+        ----------------------------------------------------------------------
+          5            Fan 1 Warning
+        ----------------------------------------------------------------------
+          4            Fan 2 Warning
+        ----------------------------------------------------------------------
+          3            Fan 1 Speed Overridden
+        ----------------------------------------------------------------------
+          2            Fan 2 Speed Overridden
+        ----------------------------------------------------------------------
+          1            Airflow Fault
+        ----------------------------------------------------------------------
+          0            Airflow Warning
+        ----------------------------------------------------------------------
+
+        Ex: SUPPORT_STATUS_FAN_MASK=0xC0
+
+        Where SUPPORT_STATUS_FAN_MASK=1100 0000b, it means the power supply
+support command(Fan 1 Fault, Fan 2 Fault) in this parameter.
+
+        25. MFR_INFO
+            From right to left, the first bit represent MFR_ID,
+the second bit represent MFR_MODEL, the third bit represent MFR_REVISION,
+the forth bit represent MFR_MODEL_OPTION, the fifth bit represent MFR_FWID
+the sixth bit represent MFR_FW_REVISION, the seventh bit represent MFR_FW_DAT,
+and the eighth bit represent MFR_SERIAL.
+
+        ----------------------------------------------------------------------
+         Bit           Meaning
+        ----------------------------------------------------------------------
+          7            MFR_SERIAL
+        ----------------------------------------------------------------------
+          6            MFR_FW_DAT
+        ----------------------------------------------------------------------
+          5            MFR_FW_REVISION
+        ----------------------------------------------------------------------
+          4            MFR_FWID
+        ----------------------------------------------------------------------
+          3            MFR_MODEL_OPTION
+        ----------------------------------------------------------------------
+          2            MFR_REVISION
+        ----------------------------------------------------------------------
+          1            MFR_MODEL
+        ----------------------------------------------------------------------
+          0            MFR_ID
+        ----------------------------------------------------------------------

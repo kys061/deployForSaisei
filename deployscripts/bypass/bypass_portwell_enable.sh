@@ -2,6 +2,8 @@
 bypass_masters=/etc/stm/bypass_masters
 kernel_ver=4.15.0-20-generic
 uname_r=$(uname -r)
+killall -9 bypass_portwell_monitor.sh >>/var/log/stm_bypass.log 2>&1
+#  ps ax | grep "bypass_portwell_monitor.sh" | head -n 1 | cut -d" " -f2
 
 function enable_bypass(){
   # cooper
@@ -9,12 +11,14 @@ function enable_bypass(){
     cd /sys/class/bypass/g3bp0
     echo b > bypass
     echo 1 > nextboot
+    echo 1 > bpe
     echo "forcing bypass cooper bump1" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
   fi
   if [ -d /sys/class/bypass/g3bp1 ]; then
     cd /sys/class/bypass/g3bp1
     echo b > bypass
     echo 1 > nextboot
+    echo 1 > bpe    
     echo "forcing bypass cooper bump2" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
   fi
   # fiber

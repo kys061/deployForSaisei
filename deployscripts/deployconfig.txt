@@ -1,10 +1,11 @@
 #bypass_config
 #model:['fc2000', 'fc4000']
+#please set fc2000 if you use old model portwell 1U
 model:fc4000
 segment1:slot0
-segment2:slot0
-segment3:slot1
-segment4:slot1
+segment2:None
+segment3:None
+segment4:None
 
 #report_config
 id:admin

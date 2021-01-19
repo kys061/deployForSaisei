@@ -272,16 +272,22 @@ def check_interface_thread():
     logger.info("STM Thread Checking is Started...")
 
     if check_subprocess_data(subprocess_open(
-        get_command(r"show parameter", r"|grep 'interfaces_per_core' |awk '{print $2}'"), 10)[0]):
+        get_command(r"show parameter", r"|grep 'cores_per_interface' |awk '{print $2}'"), 10)[0]):
         try:
             parameter = subprocess_open(
-                get_command(r"show parameter", r"|grep 'interfaces_per_core' |awk '{print $2}'"), 10)[0].strip()
+                get_command(r"show parameter", r"|grep 'cores_per_interface' |awk '{print $2}'"), 10)[0].strip()
         except Exception as e:
             logger.error("Cannot strip() parameter data.")
             parameter = "0"
             pass
 
-        if int(parameter) >= 2:
+        try:
+            parameter = int(parameter)
+        except Exception as e:
+            logger.error(e)
+            sys.exit(1)
+            
+        if int(parameter) == 0:
             thread_count = 2
             if check_subprocess_data(subprocess_open(
                 get_command(r"show int", r"| grep '[eE]thernet' |grep 'external' |awk '{{ print $1 }}'"), 10)[0]):
@@ -310,7 +316,7 @@ def check_interface_thread():
                 logging_line()
             else:
                 logger.error('Thread_monitor cannot get interfaces info from stm server, please check!!')
-        elif int(parameter) == 1:
+        elif int(parameter) >= 1:
             thread_count = 4
             if check_subprocess_data(subprocess_open(
                 get_command(r"show int", r"| grep '[eE]thernet' |awk '{{ print $1 }}'"), 10)[0]):

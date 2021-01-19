@@ -31,6 +31,7 @@ pos_virt_index=11
 #pos_virt_index=10
 
 bump_type="cooper"
+bypass_type="gen3"
 model_type="small"
 stm_status="false"
 id="cli_admin"
@@ -456,9 +457,9 @@ if [ ! -z $bitw_port_2_adminstatus ]; then
                 fi
               else
                 stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                  reboot
-                done
+                #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                  #reboot
+                # done
               fi
             else
               # check interface thread hang
@@ -467,9 +468,9 @@ if [ ! -z $bitw_port_2_adminstatus ]; then
                 bump1_operstatus="up"
               else
                 stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                  reboot
-                done
+                #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                  #reboot
+                # done
               fi
             fi
           fi
@@ -483,8 +484,8 @@ if [ ! -z $bitw_port_2_adminstatus ]; then
                   fi
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    #reboot
                   done
                 fi
               else
@@ -493,9 +494,9 @@ if [ ! -z $bitw_port_2_adminstatus ]; then
                   bump2_operstatus="up"
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    #reboot
+                  # done
                 fi
               fi
             fi
@@ -514,9 +515,9 @@ if [ ! -z $bitw_port_2_adminstatus ]; then
                   fi
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    #reboot
+                  # done
                 fi
               else
                 # check interface thread hang
@@ -524,9 +525,9 @@ if [ ! -z $bitw_port_2_adminstatus ]; then
                   bump1_operstatus="up"
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    #reboot
+                  # done
                 fi
               fi
             fi
@@ -551,9 +552,9 @@ if [ ! -z $bitw2_port_2_adminstatus ]; then
                       fi
               else
                       stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                      for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                              reboot
-                      done
+                      #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                              #reboot
+                      #done
               fi
             else
               # check interface thread hang
@@ -561,9 +562,9 @@ if [ ! -z $bitw2_port_2_adminstatus ]; then
                       bump1_operstatus="up"
               else
                       stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                      for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                              reboot
-                      done
+                      #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                              #reboot
+                      #done
               fi
             fi
           fi
@@ -577,9 +578,9 @@ if [ ! -z $bitw2_port_2_adminstatus ]; then
                   fi
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    #reboot
+                  # done
                 fi
               else
                 # check interface thread hang
@@ -587,9 +588,9 @@ if [ ! -z $bitw2_port_2_adminstatus ]; then
                   bump2_operstatus="up"
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    #reboot
+                  # done
                 fi
               fi
             fi
@@ -608,9 +609,9 @@ if [ ! -z $bitw2_port_2_adminstatus ]; then
                   fi
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    #reboot
+                  # done
                 fi
               else
                 # check interface thread hang
@@ -618,9 +619,9 @@ if [ ! -z $bitw2_port_2_adminstatus ]; then
                   bump2_operstatus="up"
                 else
                   stm_process_num=($(ps -ef | grep stm$ | awk '{print $2}'))
-                  for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
-                    reboot
-                  done
+                  #for ((i = 0; i < ${#stm_process_num[@]}; i++)); do
+                    #reboot
+                  # done
                 fi
               fi
             fi

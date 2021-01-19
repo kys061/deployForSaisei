@@ -11,6 +11,7 @@ bypass_cooper_driver=caswell_drv_bypass-gen3-V1.13.0.zip
 bypass_fiber_driver=caswell_drv_network-bypass-V3.20.0.zip
 bypass7_3_cooper_driver=caswell_drv_bypass-gen3-V1.21.3.zip
 bypass7_3_fiber_driver=caswell_drv_network-bypass-V3.20.2.zip
+bypass7_3_fiber_driver=caswell_drv_network-bypass-V3.21.0.zip
 # bypassdrv_target=/etc/stmfiles/files/scripts/
 deploy_config_path=/home/saisei/deployscripts/
 deploy_bypass_path=/home/saisei/deployscripts/bypass/
@@ -82,9 +83,11 @@ function cpFilesToTarget()
 
   
   cp ${deploy_bypass_path}bypass_portwell_monitor.sh ${scripts_target}bypass_portwell_monitor.sh
+  cp ${deploy_bypass_path}bypass_portwell_monitor_v2.sh ${scripts_target}bypass_portwell_monitor_v2.sh
   cp ${deploy_config_path}deployconfig.txt ${scripts_target}deployconfig.txt
   if [ $? -eq 0 ]; then
     log_info_and_echo "# ${deploy_bypass_path}bypass_portwell_monitor.sh is coping in ${scripts_target}bypass_portwell_monitor.sh"
+    log_info_and_echo "# ${deploy_bypass_path}bypass_portwell_monitor_v2.sh is coping in ${scripts_target}bypass_portwell_monitor_v2.sh"    
     log_info_and_echo "# ${deploy_config_path}deployconfig.txt is coping in ${scripts_target}deployconfig.txt"
     sleep $sleep_time
     log_info_and_echo "...$light_green OK! $ori"
@@ -107,6 +110,7 @@ function cpFilesToTarget()
     log_info_and_echo "...$light_green OK! $ori"
   fi
   cp ${deploy_threadmonitor_path}thread_monitor.py ${threadmonitor_target}thread_monitor.py
+  cp ${deploy_threadmonitor_path}thread_monitor_v2.py ${threadmonitor_target}thread_monitor_v2.py
   if [ $? -eq 0 ]; then
     log_info_and_echo "# ${deploy_threadmonitor_path}thread_monitor.sh is coping in ${threadmonitor_target}thread_monitor.sh"
     sleep $sleep_time
@@ -155,15 +159,65 @@ function restartApache()
   fi
 }
 
+function add_serial_console()
+{
+  is_console=$(cat /etc/default/grub |grep GRUB_CMDLINE_LINUX= |grep console=tty1 -o)
+
+  sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\"$\)/\1\nGRUB_SERIAL_COMMAND=\"serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1\"/' /etc/default/grub
+  sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\"$\)/\1\nGRUB_TERMINAL=\"console serial\"/' /etc/default/grub
+
+  if [ -z "$is_console" ]; then
+    sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\)/\1 console=tty1 console=ttyS0,115200/' /etc/default/grub
+  fi
+  
+  update-grub
+  if [ $? -eq 0 ]; then
+    log_info_and_echo "# add serial "
+    sleep $sleep_time
+    log_info_and_echo "$light_green ...OK! $ori"
+  else
+    log_info_and_echo "$light_red ...Error! check plz. $ori"
+  fi
+}
+
+function set_crontab()
+{
+  crontab -l > file
+  echo "15 0 1 * * find /etc/stmfiles/files/cores/* -type f,d -ctime +7 -exec rm -rf {} \;" > file
+
+  echo "@reboot (sleep 30 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.sh & > /dev/null 2>&1)" > file
+  echo "@reboot (sleep 60 ;  sudo iptables -I  INPUT -p tcp -m multiport --destination-ports 22,5000 -j ACCEPT > /dev/null 2>&1)" >> file
+  echo "@reboot (sleep 180 ; cp -r /home/saisei/deployscripts/report/stm.conf /etc/apache2/sites-available/ > /dev/null 2>&1)" >> file
+  echo "@reboot (sleep 200 ; sudo service apache2 restart > /dev/null 2>&1)" >> file
+  echo "@reboot (sleep 240 ; sudo /etc/stmfiles/files/scripts/thread_monitor.py & > /dev/null 2>&1)" >> file  
+  crontab file
+  rm file
+  if [ $? -eq 0 ]; then
+    log_info_and_echo "# setting crontab "
+    sleep $sleep_time
+    log_info_and_echo "$light_green ...OK! $ori"
+  else
+    log_info_and_echo "$light_red ...Error! check plz. $ori"
+  fi
+}
+
 #
 find ./ -name "*.sh" |xargs chmod 755
 find ./ -name "*.py" |xargs chmod 755
 chmod 755 /home/saisei/deployscripts/deployscripts.sh
 chmod 755 /home/saisei/deployscripts/jq
 #
-echo "=== Start enable_bypass.sh ===" | awk '{ print strftime(), $0; fflush() }' >> $LOG_FILE
-cpFilesToTarget
-installBypassDrv
-changeReportConfig
-restartApache
+echo "=== Start deployscripts.sh ===" | awk '{ print strftime(), $0; fflush() }' >> $LOG_FILE
+if [ $platform == "Desktop" ]; then
+  cpFilesToTarget
+  installBypassDrv
+  changeReportConfig
+  restartApache
+  add_serial_console
+  set_crontab
+else
+  cpFilesToTarget
+  changeReportConfig
+  restartApache
+fi
 echo "============= END ============" | awk '{ print strftime(), $0; fflush() }' >> $LOG_FILE

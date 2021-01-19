@@ -1,3 +1,12 @@
+15 0 1 * * find /etc/stmfiles/files/cores/* -type f,d -ctime +7 -exec rm -rf {} \;
+
+@reboot (sleep 10 ; printf "#"'!'"/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(3600) \n    " > /opt/stm/target/python/mapui.py)
+@reboot (sleep 12 ; printf "#"'!'"/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4000) \n    " > /opt/stm/target/call_home.py)
+@reboot (sleep 14 ; printf "#"'!'"/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4400) \n    " > /opt/stm/target/restful_call_home.py)
+@reboot (sleep 16 ; printf "#"'!'"/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4800) \n    " > /opt/stm/target/python/auto_upgrade.py)
+@reboot (sleep 16 ; printf "#"'!'"/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4800) \n    " > /opt/stm/target/set_firewall.py)
+
+
 @reboot (sleep 30 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.sh & > /dev/null 2>&1)
 
 @reboot (sleep 60 ;  sudo iptables -I  INPUT -p tcp -m multiport --destination-ports 22,5000 -j ACCEPT  > /dev/null 2>&1)
@@ -5,4 +14,4 @@
 @reboot (sleep 180 ; cp -r /opt/stm/target/files/report/stm.conf /etc/apache2/sites-available/ > /dev/null 2>&1)
 @reboot (sleep 200 ; sudo service apache2 restart > /dev/null 2>&1)
 
-@reboot (sleep 240 ; sudo /etc/stmfiles/files/scripts/thread_monitor.py & > /dev/null 2>&1)
+#@reboot (sleep 240 ; sudo /etc/stmfiles/files/scripts/thread_monitor_v2.py & > /dev/null 2>&1)
