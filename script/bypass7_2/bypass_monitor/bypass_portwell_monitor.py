@@ -269,6 +269,10 @@ def logging_line():
 def get_fiber_slot():
     # get fiber slot and bypass position()
     # 파일내에 반드시 segment1-4까지의 항목이 명시되어 있어야함.
+    '''
+        1. 세그먼트 클래스의 obj에 해당seg에 대한 정보 수집(fiber or copper / 1G or 10G / )
+        2. 
+    '''
     with open('/etc/stmfiles/files/scripts/deployconfig.txt', 'r') as f:
         rows = []
         for row in f:

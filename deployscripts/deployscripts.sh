@@ -184,20 +184,51 @@ function set_crontab()
 {
   crontab -l > file
   echo "15 0 1 * * find /etc/stmfiles/files/cores/* -type f,d -ctime +7 -exec rm -rf {} \;" > file
-
-  echo "@reboot (sleep 30 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.sh & > /dev/null 2>&1)" > file
+  echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(3600) \n    \" > /opt/stm/target/python/mapui.py)" >> file
+  echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4000) \n    \" > /opt/stm/target/call_home.py)" >> file
+  echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4400) \n    \" > /opt/stm/target/restful_call_home.py)" >> file
+  echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4800) \n    \" > /opt/stm/target/python/auto_upgrade.py)" >> file
+  echo "@reboot (sleep 120 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.sh & > /dev/null 2>&1)" >> file
   echo "@reboot (sleep 60 ;  sudo iptables -I  INPUT -p tcp -m multiport --destination-ports 22,5000 -j ACCEPT > /dev/null 2>&1)" >> file
   echo "@reboot (sleep 180 ; cp -r /home/saisei/deployscripts/report/stm.conf /etc/apache2/sites-available/ > /dev/null 2>&1)" >> file
   echo "@reboot (sleep 200 ; sudo service apache2 restart > /dev/null 2>&1)" >> file
-  echo "@reboot (sleep 240 ; sudo /etc/stmfiles/files/scripts/thread_monitor.py & > /dev/null 2>&1)" >> file  
+  echo "@reboot (sleep 240 ; sudo /etc/stmfiles/files/scripts/thread_monitor_v2.py & > /dev/null 2>&1)" >> file  
   crontab file
   rm file
+
   if [ $? -eq 0 ]; then
     log_info_and_echo "# setting crontab "
     sleep $sleep_time
     log_info_and_echo "$light_green ...OK! $ori"
   else
     log_info_and_echo "$light_red ...Error! check plz. $ori"
+  fi
+}
+
+
+function namingMgmt()
+{
+  pci_count=($(lspci -m |grep Ether |grep I2 | cut -d " " -f1))
+  # test=$(/etc/stmfiles/files/scripts/dpdk_nic_bind.py -s |grep -A 3 "Network devices using kernel driver" | cut -d " " -f1 |egrep [0-9A-Za-z]+:[0-9A-Za-z]+:[0-9A-Za-z]+.[0-9A-Za-z]+)
+  if [ ${#pci_count[@]} -gt 2 ]; then
+    echo "cooper interfaces are too many,, check plz.."
+    break
+  else
+    if [ ! -e /etc/udev/rules.d/70-persistent-net.rules ]; then
+      touch /etc/udev/rules.d/70-persistent-net.rules
+      # pci_address=($(lspci -m |grep Ether |grep I2 | cut -d " " -f1))
+      # mac=$(cat /etc/stm/devices.csv |grep ${pci_address[$i]} |cut -d "," -f6 |tr -d '"')
+      MGMTCOUNTER=0
+      for pci in $(lspci -m |grep Ether |grep I2 | cut -d " " -f1); do
+        mac=$(cat /etc/stm/devices.csv |grep ${pci} |cut -d "," -f6 |tr -d '"')
+        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"${mac}\", NAME=\"mgmt${MGMTCOUNTER}\" is added to rules.."
+        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"${mac}\", NAME=\"mgmt${MGMTCOUNTER}\"" >> /etc/udev/rules.d/70-persistent-net.rules
+        MGMTCOUNTER=$[$MGMTCOUNTER +1]
+        if [ MGMTCOUNTER -ge 2 ]; then
+          break
+        fi
+      done
+    fi
   fi
 }
 
@@ -215,6 +246,7 @@ if [ $platform == "Desktop" ]; then
   restartApache
   add_serial_console
   set_crontab
+  # namingMgmt
 else
   cpFilesToTarget
   changeReportConfig
