@@ -1,0 +1,705 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# Write by yskang(kys061@gmail.com)
+
+from saisei.saisei_api import saisei_api
+import subprocess
+import time
+from logging.handlers import RotatingFileHandler
+import logging
+import sys
+import re
+import csv, json
+import os
+from pprint import pprint 
+from time import sleep, time
+import pdb
+
+stm_ver=r'7.3'
+# root = r'rest/stm/'
+# suffix=r'configurations/running/users/?limit=0&with=last_traffic_time>'
+LOG_FILENAME=r'/var/log/test_bypass.log'
+logger = None
+# err_lists = ['Cannot connect to server', 'does not exist', 'no matching objects', 'waiting for server']
+# logging_temp = `{0:16}{1:8}{2:16}{3:16}{4:16}{5:16}{6:16}{7:16}{8:16}`
+
+class Segment(object):
+    def __init__(self):
+        self.__name, self.__bypass_state, self.__segment_state = "None", None, None
+        self.__ext_name, self.__ext_state, self.__ext_admin_status = None, None, None
+        self.__peer_name, self.__peer_state, self.__peer_admin_status = None, None, None
+        self.__slot , self.__link_type, self.__pci_address = "None", None, None
+        self.__pci_width = "None"
+        
+    def __str__(self):
+        return "(segment: {})".format(self.name)
+
+    def log_segment_state(self):
+        logger.info("{0:7}{1:13}{2:13}{3:15}{4:15}{5:13}{6:13}{7:15}{8:13}{9:15}{10:13}{11:9}".format(
+            self.slot, self.name, self.segment_state, 
+            self.ext_name, self.ext_state, self.ext_admin_status,
+            self.peer_name, self.peer_state, self.peer_admin_status,
+            self.bypass_state, self.link_type, self.pci_width
+            ))
+
+    @property
+    def name(self):
+        return self.__name
+    
+    @name.setter
+    def name(self, val):
+        self.__name = "segment" + val
+
+    @property
+    def link_type(self):
+        return self.__link_type
+        
+    @link_type.setter
+    def link_type(self, val):
+        self.__link_type = val
+    
+    @property
+    def pci_address(self):
+        return self.__pci_address
+        
+    @pci_address.setter
+    def pci_address(self, val):
+        self.__pci_address = val    
+
+    @property
+    def bypass_state(self):
+        return self.__bypass_state
+        
+    @bypass_state.setter
+    def bypass_state(self, val):
+        self.__bypass_state = val
+    
+    @property
+    def segment_state(self):
+        return self.__segment_state
+    
+    @segment_state.setter
+    def segment_state(self, val):
+        if val:
+            self.__segment_state="Activated"
+        else:
+            self.__segment_state="Inactivated"      
+
+    @property
+    def ext_name(self):
+        return self.__ext_name
+    
+    @ext_name.setter
+    def ext_name(self, val):
+        self.__ext_name = val
+
+    @property
+    def ext_state(self):
+        return self.__ext_state
+    
+    @ext_state.setter
+    def ext_state(self, val):
+        self.__ext_state = val
+
+    @property
+    def ext_admin_status(self):
+        return self.__ext_admin_status
+    
+    @ext_admin_status.setter
+    def ext_admin_status(self, val):
+        self.__ext_admin_status = val                
+
+    @property
+    def peer_name(self):
+        return self.__peer_name
+    
+    @peer_name.setter
+    def peer_name(self, val):
+        self.__peer_name = val
+    
+    @property
+    def peer_state(self):
+        return self.__peer_state
+    
+    @peer_state.setter
+    def peer_state(self, val):
+        self.__peer_state = val
+
+    @property
+    def peer_admin_status(self):
+        return self.__peer_admin_status
+    
+    @peer_admin_status.setter
+    def peer_admin_status(self, val):
+        self.__peer_admin_status = val
+
+    @property
+    def slot(self):
+        return self.__slot
+        
+    @slot.setter
+    def slot(self, val):
+        self.__slot = val        
+
+    @property
+    def pci_width(self):
+        return self.__pci_width
+        
+    @pci_width.setter
+    def pci_width(self, val):
+        self.__pci_width = val
+
+
+class G(object):
+    __instance = None
+    _segment = list()
+        
+    stm_status=False
+    stm_thread_status=False
+
+    userid=r'cli_admin'
+    passwd=r'cli_admin'
+    host=r'localhost'
+    port=r'5000'
+
+    rest_basic_path=r'configurations/running/'
+    rest_token=r'1'
+    rest_order=r'>interface_id'
+    rest_start=r'0'
+    rest_limit=r'10'
+    
+    link_type=r'copper'
+    model_type=r'small'
+    cores_per_interface=0 # small,
+    interface_size=0
+    segment_size=0
+    # cooper interfaces count
+    cooper_count=0
+    board = 'COSD304'
+
+    fiber_seg_slot_number=[]
+    is_same_slot_number=[]
+    segment_state=[]
+
+    # for global list of segments
+    segments = []
+
+    @classmethod
+    def __getInstance(cls):
+        return cls.__instance
+
+    @classmethod
+    def instance(cls, *args, **kargs):
+        cls.__instance = cls(*args, **kargs)
+        cls.instance = cls.__getInstance
+        return cls.__instance
+
+    @classmethod
+    def append_segment_data(cls, data):
+        cls._segment.append(data)
+
+
+class Resturl():
+    def __init__(self, saisei_class, select_attrs, with_attrs=[], with_vals=[]):
+        if len(with_attrs) >= 2:
+            self.select_attrs = ",".join(select_attrs)
+            with_patterns = []
+            for i, attr in enumerate(with_attrs):
+                for j, val in enumerate(with_vals):
+                    if i==j:
+                        with_pattern = "%s=%s" % (attr, val)
+                        with_patterns.append(with_pattern)
+            with_patterns = ",".join(with_patterns)
+            self.rest_url = '%s%s?token=%s&order=%s&start=%s&limit=%s&select=%s&with=%s' \
+            % ( G.rest_basic_path, 
+                saisei_class, 
+                G.rest_token, 
+                G.rest_order, 
+                G.rest_start, 
+                G.rest_limit, 
+                self.select_attrs, with_patterns)
+        elif len(with_attrs) == 1:
+            self.select_attrs = ",".join(select_attrs)
+            with_pattern = None
+            for i, attr in enumerate(with_attrs):
+                for j, val in enumerate(with_vals):
+                    if i==j:
+                        with_pattern = "%s=%s" % (attr, val)
+            self.rest_url = '%s%s?token=%s&order=%s&start=%s&limit=%s&select=%s&with=%s' \
+            % ( G.rest_basic_path, 
+                saisei_class, 
+                G.rest_token, 
+                G.rest_order, 
+                G.rest_start, 
+                G.rest_limit, 
+                self.select_attrs, with_pattern)
+        else:
+            self.select_attrs = select_attrs
+            self.rest_url = '%s%s%s' \
+            % ( G.rest_basic_path, 
+                saisei_class,  
+                self.select_attrs)
+
+    def __str__(self):
+        return "RestUrl: %s" % (self.rest_url)
+
+    def get_rest_url(self):
+        return self.rest_url
+
+
+def timer(func):
+    def wrapper():
+        before = time()
+        func()
+        print("main() took {} seconds".format(time()- before))
+        logger.info("main() took {} seconds".format(time()- before))
+    return wrapper
+
+
+# make_url = lambda suffix : 'http://%s:%d/%s%s' % (host, port, root, suffix)
+
+def make_logger():
+    global logger
+    try:
+        logger = logging.getLogger('bypass')
+        fh = RotatingFileHandler(LOG_FILENAME, 'a', 50 * 1024 * 1024, 4)
+        logger.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
+    except Exception as e:
+        print('cannot make logger, please check system, {}'.format(e))
+        sys.exit()
+    else:
+        logger.info("***** logger starting %s *****" % (sys.argv[0]))
+
+
+class Timeout(Exception):
+    '''쉘에서 정상적인 반환을 안하는 경우 발생 '''
+
+
+def subprocess_open(command, timeout):
+    try:
+        p_open = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    except Exception as e:
+        logger.error("subprocess_open() cannot be executed, {}".format(e))
+        pass
+    else:
+        for t in xrange(timeout):
+            sleep(1)
+            if p_open.poll() is not None:
+                (stdout_data, stderr_data) = p_open.communicate()
+                return stdout_data, stderr_data
+            try:
+                if t == timeout-1:
+                    p_open.kill()
+                    raise Timeout
+            except Timeout:
+                logger.error("timout while running subprocess()")
+
+
+def logging_line(lines=164):
+    logger.info("-"*lines)
+
+
+def set_segment_slot(segment):
+    # segment.pci_address is external's pci address  -> 0000:0{N}:00.0
+    try:
+        pci_number = segment.pci_address.split(":")[1]
+    except Exception as e:
+        logger.error("set_segment_slot: {}".format(e))
+
+    for i in range(1, 7):
+        if int(pci_number) == 1 and i == 1:
+            segment.slot="slot0"
+        elif int(pci_number) == 2 and i == 2:
+            segment.slot="slot1"
+        elif int(pci_number) > 2 and i > 2:
+            for _segment in G.segments:
+                try:
+                    if int(_segment.name.replace("segment", "")) == int(segment.name.replace("segment", "")) - 1:
+                        if int(_segment.pci_address.split(":")[1]) == int(segment.pci_address.split(":")[1]):
+                            segment.slot=_segment.slot
+                        else:
+                            segment.slot="slot{}".format(int(_segment.slot.replace("slot", ""))+1)                
+                except ValueError as e:
+                    pass
+
+
+def set_pci_width(pci_address, segment):
+    pci_address = pci_address.replace("0000:", "")
+    cmd = "lspci -vv -s {} |grep LnkCap |egrep 'Width x[0-9]' -o |egrep '[0-9]' -o".format(pci_address)
+    _pci_width, _ = subprocess_open(cmd, 10)
+    try:
+        _pci_width = _pci_width.strip()
+    except Exception as e:
+        logger.error(e)
+    segment.pci_width = _pci_width
+
+
+def get_link_type(pci_address):
+    cmd = r'/etc/stmfiles/files/scripts/dpdk_nic_bind.py -s |grep -B 15 "Network devices using kernel driver" |grep ' + pci_address
+    nic_bind, _ = subprocess_open(cmd, 10)
+    try:
+        nic_bind = nic_bind.strip().split('\n')
+    except Exception as e:
+        logger.error(e)
+    
+    try:
+        nic_data=[]
+        for nic in nic_bind:
+            nic_data.append({
+                "pci_address": re.findall(r"0000:[0-9A-Za-z][0-9A-Za-z]:00.[0-9]", nic)[0].replace("0000:", ""),
+                "link_type": re.findall(r"\'[0-9A-Za-z +-/]+\'", nic)[0].replace(" ", "")
+            })
+    except IndexError as e:
+        print("Indexing error for nic_data!!")
+        logger.error("Indexing error for nic_data!!")
+        sys.exit()
+
+    for data in nic_data:
+        if ('Fiber') in data['link_type']:
+            return '1G_fiber'
+        elif ('SFP') in data['link_type']:
+            return '10G_fiber'
+        else:
+            return 'cooper'
+
+
+def get_interface_info(saisei_class, select_attrs, with_attrs, with_vals):
+    rest_url = Resturl(
+                saisei_class,
+                select_attrs,
+                with_attrs,
+                with_vals
+            )
+    response = api.rest.get(rest_url.get_rest_url())
+    return response
+
+
+def get_peer_interface_info(peer_name):
+    rest_url = Resturl("interfaces/", "{}?level=detail&format=human&link=expand&time=utc".format(peer_name))
+    peer_int = api.rest.get(rest_url.get_rest_url())['collection'][0]
+    return peer_int
+
+
+
+def set_segment_state(segment_number, peer_status, enabled_size, int_thread_state, interface, peer_int, segment):
+    _link_type = get_link_type(interface["pci_address"])
+    segment.link_type=_link_type
+    set_segment_slot(segment)
+    set_bypass_state(segment_number, _link_type, segment)
+    set_pci_width(interface["pci_address"], segment)
+    if peer_status == "up":
+        int_thread_state, _ = subprocess_open("sudo /bin/ps -elL |grep {} -o |wc -l".format(interface["name"]), 10)
+        if (int(int_thread_state.strip()) > 0):
+            segment.segment_state = True
+        else:
+            segment.segment_state = False
+        # for peer thread checking logic
+        # if (int_thread_state.strip() == interface["name"]):
+        #     if int(G.cores_per_interface) >= 1:
+        #         int_peer_thread_state, _ = subprocess_open("sudo ps -elL |grep {} |awk '{}'".format(peer_int["name"], "{print $15}"), 10)
+        #         if int_peer_thread_state.strip() == peer_int["name"]:
+        #             segment.segment_state = True
+        #         else:
+        #             segment.segment_state = False
+        #     else:
+        #         segment.segment_state = True
+    else:
+        segment.segment_state = False
+
+
+def set_parameter_info(attr="cores_per_interface"):
+    parameter_url = Resturl(
+    "parameters?",
+    "level=full&format=human&link=expand&time=utc")
+    G.cores_per_interface = api.rest.get(parameter_url.get_rest_url())['collection'][0][attr] 
+
+
+def get_parameter_info(attr="model"):
+    parameter_url = Resturl(
+    "parameters?",
+    "level=full&format=human&link=expand&time=utc")
+    return api.rest.get(parameter_url.get_rest_url())['collection'][0][attr] 
+
+
+def set_segment_obj(seg_num, interface, peer_int, segment):
+    segment.name = str(seg_num+1)
+    segment.ext_name = interface["name"]
+    segment.ext_admin_status = interface["admin_status"]
+    segment.ext_state = interface["state"]
+    segment.peer_name = peer_int["name"]
+    segment.peer_admin_status = peer_int["admin_status"]
+    segment.peer_state = peer_int["state"]
+    segment.pci_address = interface["pci_address"]
+
+def check_segment_state():
+    '''
+    '''
+    saisei_class = "interfaces/"
+    select_attrs = ["name", "actual_direction", "state", "admin_status", "pci_address", "interface_id", "type", "peer"]
+    with_attrs = ["type", "actual_direction"]
+    with_vals = ["ethernet", "external"]
+
+    external_interfaces = get_interface_info(saisei_class, select_attrs, with_attrs, with_vals)
+    set_parameter_info(attr="cores_per_interface")
+    enabled_size = 0    
+    for i, interface in enumerate(external_interfaces["collection"]):
+        if (interface["state"] == "enabled" and interface["admin_status"] == "up"):
+            # get thread count of external interface
+            int_thread_state, _ = subprocess_open(r'/bin/ps -elL |grep {} -o |wc -l'.format(interface["name"]), 10)
+            peer_int = get_peer_interface_info(interface["peer"]["link"]["name"])
+            peer_status = peer_int['admin_status']
+            set_segment_obj(i, interface, peer_int, G.segments[i])
+            set_segment_state(i, peer_status, enabled_size, int_thread_state, interface, peer_int, G.segments[i])
+        else:
+            logger.error("There is no Segment.")
+
+'''
+    for 1G_fiber 4port, it will check which port is bypass0 or not
+'''
+def compare_segment_pci_adress(segment):
+    try:
+        for _segment in G.segments:
+            if int(_segment.pci_address.split(":")[1]) == int(segment.pci_address.split(":")[1]):
+                if float(_segment.pci_address.split(":")[2]) != float(segment.pci_address.split(":")[2]):
+                    if float(_segment.pci_address.split(":")[2]) > float(segment.pci_address.split(":")[2]):
+                        return True
+                    else:
+                        return False
+    except ValueError as e:
+        pass 
+
+
+def set_bypass_state(seg_number, link_type, segment):
+    if link_type == "10G_fiber":
+        if 'slot' in segment.slot:
+            bypass_state, _ = subprocess_open("sudo cat /sys/class/misc/caswell_bpgen2/{}/bypass0".format(segment.slot), 10)
+            if bypass_state.strip('\n') == "0":
+                segment.bypass_state = 'disabled'
+            elif bypass_state.strip('\n') == "2":
+                segment.bypass_state = 'enabled'
+            else:
+                segment.bypass_state = 'None'
+        else:
+            segment.bypass_state = 'None'
+    elif link_type == "1G_fiber":
+        if 'slot' in segment.slot:
+            try:
+                if int(segment.pci_width) == 4:
+                    if compare_segment_pci_adress(segment):
+                        bypass_state0, _ = subprocess_open("sudo cat /sys/class/misc/caswell_bpgen2/{}/bypass0".format(segment.slot), 10)
+                        if bypass_state0.strip('\n') == "0":
+                            segment.bypass_state = 'disabled'
+                        elif bypass_state0.strip('\n') == "2":
+                            segment.bypass_state = 'enabled'
+                        else:
+                            segment.bypass_state = 'None'                                
+                    else:
+                        bypass_state1, _ = subprocess_open("sudo cat /sys/class/misc/caswell_bpgen2/{}/bypass1".format(segment.slot), 10)
+                        if bypass_state1.strip('\n') == "0":
+                            segment.bypass_state = 'disabled'
+                        elif bypass_state1.strip('\n') == "2":
+                            segment.bypass_state = 'enabled'
+                        else:
+                            segment.bypass_state = 'None'
+            except ValueError as e:
+                pass   
+                            
+        else:
+            segment.bypass_state = 'None'
+    else:
+        try:
+            if G.cooper_count > 0:
+                for i in xrange(G.cooper_count):
+                    bypass_state, _ = subprocess_open('cat /sys/class/bypass/g3bp{}/bypass'.format(i), 10)
+                    if bypass_state.strip('\n') == "n":
+                        segment.bypass_state = 'disabled'
+                    elif bypass_state.strip('\n') == "b":
+                        segment.bypass_state = 'enabled'
+                    else:
+                        segment.bypass_state = 'None'
+            else:
+                logger.info("There is no Cooper interface..")
+        except Exception as e:
+            logger.error(e)
+            pass
+
+
+def bypass(segment, action="disable"):
+    if segment.link_type == "10G_fiber":
+        fiber_module, _ = subprocess_open("sudo lsmod | grep network_bypass | awk '{ print $1 }'", 10)
+        i2c_module, _ = subprocess_open("sudo lsmod | grep i2c_i801 | awk '{ print $1 }'", 10)
+        if i2c_module is "":
+            subprocess_open("sudo modprobe i2c-i801", 10)
+            logger.info("insert mod i2c-i801")
+
+        if fiber_module is "":
+            subprocess_open("sudo insmod /opt/stm/bypass_drivers/portwell_fiber/driver/network-bypass.ko board={}".format(G.board), 10)
+            logger.info("insert mod /opt/stm/bypass_drivers/portwell_fiber/driver/network-bypass.ko")
+        # if bypass and thread is alive
+        if 'slot' in segment.slot:
+            if segment.bypass_state == "enabled" and action == "disable":
+                subprocess_open("sudo echo 0 > /sys/class/misc/caswell_bpgen2/{}/bypass0".format(segment.slot), 10)
+                subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/nextboot0".format(segment.slot), 10)
+                subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/bpe0".format(segment.slot), 10)
+                logger.info("disable {} fiber bypass0 in {}!".format(segment.name, segment.slot))
+
+            # if normal and thread is dead
+            if segment.bypass_state == "disabled" and action == "enable":
+                subprocess_open("sudo echo 2 > /sys/class/misc/caswell_bpgen2/{}/bypass0".format(segment.slot), 10)
+                subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/nextboot0".format(segment.slot), 10)
+                subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/bpe0".format(segment.slot), 10)
+                logger.info("enable {} fiber bypass0 in {}!".format(segment.name, segment.slot))
+        else:
+            logger.error("Cannot bypass {}, because there is no slot number in {}".format(action, segment.name))
+
+    elif segment.link_type == "1G_fiber":
+        fiber_module, _ = subprocess_open("sudo lsmod | grep network_bypass | awk '{ print $1 }'", 10)
+        i2c_module, _ = subprocess_open("sudo lsmod | grep i2c_i801 | awk '{ print $1 }'", 10)
+        if i2c_module is "":
+            subprocess_open("sudo modprobe i2c-i801", 10)
+            logger.info("insert mod i2c-i801")
+
+        if fiber_module is "":
+            subprocess_open("sudo insmod /opt/stm/bypass_drivers/portwell_fiber/driver/network-bypass.ko board={}".format(G.board), 10)
+            logger.info("insert mod /opt/stm/bypass_drivers/portwell_fiber/driver/network-bypass.ko")  
+        if 'slot' in segment.slot:
+            if segment.bypass_state == "enabled" and action == "disable":
+                try:
+                    if int(segment.pci_width) == 4:
+                        if compare_segment_pci_adress(segment):
+                            subprocess_open("sudo echo 0 > /sys/class/misc/caswell_bpgen2/{}/bypass0".format(segment.slot), 10)
+                            subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/nextboot0".format(segment.slot), 10)
+                            subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/bpe0".format(segment.slot), 10)
+                            logger.info("disable {} fiber bypass0 in {}!".format(segment.name, segment.slot))                              
+                        else:
+                            subprocess_open("sudo echo 0 > /sys/class/misc/caswell_bpgen2/{}/bypass1".format(segment.slot), 10)
+                            subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/nextboot1".format(segment.slot), 10)
+                            subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/bpe1".format(segment.slot), 10)
+                            logger.info("disable {} fiber bypass1 in {}!".format(segment.name, segment.slot)) 
+                except ValueError as e:
+                    pass
+
+            if segment.bypass_state == "disabled" and action == "enable":
+                try:
+                    if int(segment.pci_width) == 4:
+                        if compare_segment_pci_adress(segment):
+                            subprocess_open("sudo echo 2 > /sys/class/misc/caswell_bpgen2/{}/bypass0".format(segment.slot), 10)
+                            subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/nextboot0".format(segment.slot), 10)
+                            subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/bpe0".format(segment.slot), 10)
+                            logger.info("disable {} fiber bypass0 in {}!".format(segment.name, segment.slot))                              
+                        else:
+                            subprocess_open("sudo echo 2 > /sys/class/misc/caswell_bpgen2/{}/bypass1".format(segment.slot), 10)
+                            subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/nextboot1".format(segment.slot), 10)
+                            subprocess_open("sudo echo 1 > /sys/class/misc/caswell_bpgen2/{}/bpe1".format(segment.slot), 10)
+                            logger.info("disable {} fiber bypass1 in {}!".format(segment.name, segment.slot)) 
+                except ValueError as e:
+                    pass
+        else:
+            segment.bypass_state = 'None'    
+
+    else:    
+        lsmod, _ = subprocess_open("sudo /sbin/lsmod | grep caswell_bpgen3", 10)
+        if lsmod is "":
+                subprocess_open("sudo /sbin/insmod /opt/stm/bypass_drivers/portwell_kr/src/driver/caswell-bpgen3.ko", 10)
+                logger.info("insert module caswell-bpgen3.ko for copper")
+        if segment.bypass_state == "enabled" and action == "disable":
+            for i in xrange(G.cooper_count):
+                subprocess_open("sudo echo 1 > /sys/class/bypass/g3bp{}/func".format(i), 10)
+                subprocess_open("sudo echo 1 > /sys/class/bypass/g3bp{}/nextboot".format(i), 10)
+                subprocess_open("sudo echo n > /sys/class/bypass/g3bp{}/bypass".format(i), 10)
+                logger.info("disable {} g3bp{} copper bypass!".format(segment.name, i))
+
+        if segment.bypass_state == "disabled" and action == "enable":
+            for i in xrange(G.cooper_count):
+                subprocess_open("sudo echo 1 > /sys/class/bypass/g3bp{}/func".format(i), 10)
+                subprocess_open("sudo echo 1 > /sys/class/bypass/g3bp{}/nextboot".format(i), 10)
+                subprocess_open("sudo echo b > /sys/class/bypass/g3bp{}/bypass".format(i), 10)
+                logger.info("enable {} g3bp{} copper bypass!".format(segment.name, i))
+
+
+def logging_state():
+    logging_line(lines=164)
+    logger.info("{0:7}{1:13}{2:13}{3:15}{4:15}{5:13}{6:13}{7:15}{8:13}{9:15}{10:13}{11:9}".format(
+    "[slot]", "[seg_name]", "[seg_state]", "[ext_int_name]", "[ext_state]", "[ext_admin]", "[peer]", 
+    "[peer_state]", "[peer_admin]", "[bypass_state]", "[link_type]", "[pci_width]"
+    ))
+    for i in xrange(G.segment_size):
+        G.segments[i].log_segment_state()
+    logger.info("{0:16}{1:16}".format("[model_type]", "[cores_per_interface]"))
+    logger.info("{0:16}{1:16}".format(G.model_type, G.cores_per_interface))
+    logging_line(lines=164)
+
+
+make_logger()
+
+
+is_api=False
+while not is_api:
+    try:
+        api = saisei_api(server=G.host, port=G.port, user=G.userid, password=G.passwd)
+    except Exception as e:
+        logger.error('api: {}'.format(e))
+        pass
+    else:
+        is_api=True
+
+
+
+# @timer
+def main():
+    saisei_class = "interfaces/"
+    select_attrs = ["name", "actual_direction", "state", "admin_status", "pci_address", "interface_id", "type", "peer"]
+    with_attrs = ["type"]
+    with_vals = ["ethernet"]
+
+    try:
+        response = get_interface_info(saisei_class, select_attrs, with_attrs, with_vals)
+        G.interface_size = response['size']
+        G.interface_size = int(G.interface_size)
+        G.segment_size = int(G.interface_size)/2
+        G.model_type = get_parameter_info('model')
+    except Exception as e:
+        logger.error(e)
+        G.segment_size = 0
+        pass
+            
+    
+    # make segments 
+    for i in xrange(G.segment_size):
+        G.segments.append(Segment())
+
+    while not G.stm_status:
+        response = get_interface_info(saisei_class, select_attrs, with_attrs, with_vals)
+        if int(response['size']) > 1:
+            G.stm_status = True
+        else:
+            G.stm_status = False
+            logger.error("There is no segment in saisei, plz check.. will sleep 5s..")
+        sleep(5)
+
+    while True:
+        check_segment_state()
+        logging_state()
+        G.cooper_count=0
+        
+        for segment in G.segments:
+            if segment.link_type == "cooper":
+                G.cooper_count += 1
+            if segment.segment_state == "Activated":
+                bypass(segment, action="disable")
+            else:
+                bypass(segment, action="enable")
+        # sleep(2)
+
+
+if __name__ == "__main__":
+    try:        
+        main()
+    except KeyboardInterrupt:
+        logger.info("The script is terminated by interrupt!")
+        # logger.info("\r\nThe script is terminated by user interrupt!")
+        logger.info("Bye!!")
+        sys.exit()

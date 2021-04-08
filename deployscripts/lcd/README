@@ -1,0 +1,83 @@
+----------------------------------------------------------------------------
+        Caswell EZIO utility README File
+        Copyright(c) 2018 Caswell, Inc.
+----------------------------------------------------------------------------
+============================================================================
+Date: Apr 03 2019
+============================================================================
+
+[Introduction]
+
+    ezio_300_api package is a sample control 2*16 EZIO utility.
+  
+    ezio_340_api package is a sample control 2*16 EZIO utility. Besides the
+design of five buttons, other commands are same with EZIO-300.
+
+    ezio_g500_api package is a sample control 128*64 graphic LCD device utility. 
+
+[General Description]
+
+    The ezio_300_api can create a customized pattern by the command -p.
+The usage is setted as following: ezio_300_api -d [device] -p [Information].
+The [Information] includes the save address, and the pattern data of the eight rows.
+For example, the pattern is created as below.
+
+Address: 03
+Customized pattern:
+				43210
+			0 	XXXXX 	---1F
+			1 	XXXX.	---1E
+			2 	XXX.. 	---1C
+			3 	XX... 	---18
+			4 	X.... 	---10
+			5 	....X 	---01
+			6 	...XX 	---03
+			7 	..XXX 	---07
+
+  The 'X' means bright points and the '.' means blank ones.
+There are eight address (00 to 07) can be used to save customized patterns.
+The row 0 is 'XXXXX' which means '11111' in binary and '1F' in hexadecimal format.
+This example can be created by the following command:
+
+		ezio_300_api -d [device] -p "031F1E1C1810010307"
+
+Finally, this pattern is created in address 03.
+
+[Sample LCD Daemon]
+    In this package, an simple LCD daemon as sample program to utilize the EZIO API (for EZIO-300) is provided. The daemon provides rolling menu with time display, reboot, and shutdown features to show basic display and button functions of the EZIO module.
+
+    1. Build sample LCD Daemon.
+
+       # cd <path of utility>/src/sample/lcdd
+
+       # make
+
+    2. The executive file "lccd" is generated in "bin". Please execute the program as daemon.
+
+       # ./bin/lcdd /dev/ttyS1 &
+
+[Use this sample in Linux OS (non-FreeBSD)]
+    1. Build all EZIO APIs
+       # cd <path of utility>
+
+       # make
+
+    2. The all EZIO APIs are generated in "bin". Please execute the sample utility.
+
+       # cd bin
+       # ./ezio_380_api -d [device] [command]
+         EX: Clear screen of EZIO
+         >> ./ezio_380_api -d /dev/ttyS1 -c
+
+[Use this sample in FreeBSD]
+    1. Build all EZIO APIs
+       # cd <path of utility>
+
+       # make CC=clang
+        
+    2. The all EZIO APIs are generated in "bin". Please execute the sample utility.
+
+       # cd bin
+       # ./ezio_300_api -d [device] [command]
+         EX: Clear screen of EZIO
+         >> ./ezio_300_api -d /dev/cuau1 -c

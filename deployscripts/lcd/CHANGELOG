@@ -1,0 +1,107 @@
+===============================================================================
+    caswell_util_ezio V1.11.1 ChangeLogs
+===============================================================================
+Date:   Thu May 9 17:21:19 2019 +0800
+
+    1. Enable STOP command for EZIO-360.
+    2. Set version to V1.11.1.
+
+===============================================================================
+    caswell_util_ezio V1.10.1 ChangeLogs
+===============================================================================
+Date:   Wed Oct 24 11:44:24 2018 +0800
+
+    1. Revise the variable declaration to avoid compiling warnings with FreeBSD
+       clang compiler.
+
+===============================================================================
+    caswell_util_ezio V1.10.0 ChangeLogs
+===============================================================================
+Date:   Tue Mar 7 18:47:31 2017 +0800
+
+    1. Add new EZIO module EZIO-380 support.
+
+===============================================================================
+    caswell_util_ezio V1.9.0 ChangeLogs
+===============================================================================
+Date:   Fri May 13 10:31:50 2016 +0800
+
+    1. Update image display option for EZIO G400/500 utilities to fit supported resolution.
+    2. Update set cursor position option for G400.
+    3. Update usage help for G400/500 utilities.
+    4. Add sample daemon for G400.
+    5. Fixed issue that cursor show/hide commands are reversed.
+    6. Fixed issue that cursor leftmost/rightmost commands are reversed.
+
+===============================================================================
+    caswell_util_ezio V1.8.0 ChangeLogs
+===============================================================================
+Date:   Thu Apr 7 18:09:15 2016 +0800
+
+    1. Generate the executable binary for EZIO-370.
+
+===============================================================================
+    caswell_util_ezio V1.7.0 ChangeLogs
+===============================================================================
+Date:   Thu Mar 31 14:15:05 2016 +0800
+
+    1. Add LED function.
+    2. Add functions to load/save images.
+    3. Add sample LCD daemon of EZIO G500 to show basic display and button functions.
+
+===============================================================================
+    caswell_util_ezio V1.6.0 ChangeLogs
+===============================================================================
+Date:   Wed Sep 2 18:23:34 2015 +0800
+
+    1. Add EZIO-330 support.
+
+===============================================================================
+caswell_util_ezio V1.5.0 ChangeLogs
+===============================================================================
+Date:   Mon Aug 24 10:09:38 2015 +0800
+
+    1. Add sample LCD daemon to show basic display and button functions.
+    2. Set the version to V1.5.0.
+
+===========================================================================
+caswell_util_ezio V1.4.3 ChangeLogs
+===========================================================================
+Date:   Wed Sep 17 17:24:32 2014 +0800
+
+    1. Add corresponding StopSend command for the Init command.
+
+===========================================================================
+caswell_util_ezio V1.4.2 ChangeLogs
+===========================================================================
+Date:   Wed Nov 6 19:21:47 2013 +0800
+ 
+    1. Set V1.4.2 for release.
+    2. Add API function of customized pattern display.
+    3. Support EZIO-310, EZIO-320, EZIO-350, and EZIO-360.
+    4. Fix get-key function failed issue on Tilera platform.
+
+===========================================================================
+caswell_util_ezio V1.4.1 ChangeLogs
+===========================================================================
+Date:   Thu Jul 18 01:13:16 2013 +0800
+ 
+    1. Fix bug to enable function of displaying character in specific position.
+
+===========================================================================
+caswell_util_ezio V1.4.0 ChangeLogs
+===========================================================================
+Date:   Wed May 8 11:05:57 2013 +0800
+ 
+    1. Support EZIO-340 which is with five-buttons design.
+
+===========================================================================
+caswell_util_ezio V1.3.0 ChangeLogs
+===========================================================================
+Date:   Fri Sep 10 14:28:01 2010 +0800
+ 
+    1. Fix the typo on EZIO_300_UserManual (CH6. /dec > /dev)
+    2. Fix the example device to /dev/ttyS1 on EZIO_300 & G400 UserManual
+    3. This is our entry errors, we modify the module name from the EZIO-G300 to EZIO-300.
+    4. Revise ezio g300 for IBM's EZIO init noise test.
+    5. Add an option function to send 0xFE before send init command.

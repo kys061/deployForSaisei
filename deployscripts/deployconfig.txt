@@ -2,10 +2,14 @@
 #model:['fc2000', 'fc4000']
 #please set fc2000 if you use old model portwell 1U
 model:fc4000
-segment1:slot0
+segment1:None
 segment2:None
 segment3:None
 segment4:None
+segment5:None
+segment6:None
+segment7:None
+segment8:None
 
 #report_config
 id:admin

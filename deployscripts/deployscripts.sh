@@ -23,6 +23,10 @@ report_target=/opt/stm/target/files/
 report_config_path=/opt/stm/target/files/report/config/report-config-7.3.1-11149.json
 report_config_target=/opt/stm/target/files/report/config/report-config.json
 jq_path=/home/saisei/deployscripts/
+pmbus_path=/home/saisei/deployscripts/pmbus/
+lmsensor_path=/home/saisei/deployscripts/lm-sensors/
+lcd_path=/home/saisei/deployscripts/lcd/
+
 
 id="cli_admin"
 pass="cli_admin"
@@ -53,76 +57,97 @@ function log_info_and_echo()
   echo -e $msg
 }
 
+function checkaftercmd()
+{
+  is_done=$1
+  src_path=$2
+  filename=$3
+  dst_path=$4
+  if [ $1 -eq 0 ]; then
+    log_info_and_echo "# ${src_path}${filename} is coping in ${dst_path}"
+    sleep $sleep_time
+    log_info_and_echo "...$light_green OK! $ori"
+  else
+    log_info_and_echo "$light_red ...ERROR! check plz. $ori"
+  fi
+}
+
 function cpFilesToTarget()
 {
   # copy bypass to target
   cp ${deploy_bypass_path}${bypass_cooper_driver} ${scripts_target}
+  checkaftercmd $? ${deploy_bypass_path} ${bypass_cooper_driver} ${scripts_target}
+
   cp ${deploy_bypass_path}${bypass7_3_cooper_driver} ${scripts_target}
-  if [ $? -eq 0 ]; then
-    log_info_and_echo "# ${deploy_bypass_path}${bypass_cooper_driver} is coping in ${scripts_target}"
-    log_info_and_echo "# ${deploy_bypass_path}${bypass7_3_cooper_driver} is coping in ${scripts_target}"
-    sleep $sleep_time
-    log_info_and_echo "...$light_green OK! $ori"
-  fi
+  checkaftercmd $? ${deploy_bypass_path} ${bypass7_3_cooper_driver} ${scripts_target}
+
   
   cp ${deploy_bypass_path}${bypass_fiber_driver} ${scripts_target}
+  checkaftercmd $? ${deploy_bypass_path} ${bypass_fiber_driver} ${scripts_target}
+
+
   cp ${deploy_bypass_path}${bypass7_3_fiber_driver} ${scripts_target}
-  if [ $? -eq 0 ]; then
-    log_info_and_echo "# ${deploy_bypass_path}${bypass_fiber_driver} is coping in ${scripts_target}"
-    log_info_and_echo "# ${deploy_bypass_path}${bypass7_3_fiber_driver} is coping in ${scripts_target}"
-    sleep $sleep_time
-    log_info_and_echo "...$light_green OK! $ori"
-  fi
+  checkaftercmd $? ${deploy_bypass_path} ${bypass7_3_fiber_driver} ${scripts_target}
   
   cp ${deploy_bypass_path}bypass_portwell_install.sh ${scripts_target}bypass_portwell_install.sh
-  if [ $? -eq 0 ]; then
-    log_info_and_echo "# ${deploy_bypass_path}bypass_portwell_install.sh is coping in ${scripts_target}bypass_portwell_install.sh"
-    sleep $sleep_time
-    log_info_and_echo "...$light_green OK! $ori"
-  fi
+  checkaftercmd $? ${deploy_bypass_path} bypass_portwell_install.sh ${scripts_target}bypass_portwell_install.sh
+
 
   
   cp ${deploy_bypass_path}bypass_portwell_monitor.sh ${scripts_target}bypass_portwell_monitor.sh
+  checkaftercmd $? ${deploy_bypass_path} bypass_portwell_monitor.sh ${scripts_target}bypass_portwell_monitor.sh
+
   cp ${deploy_bypass_path}bypass_portwell_monitor_v2.sh ${scripts_target}bypass_portwell_monitor_v2.sh
+  checkaftercmd $? ${deploy_bypass_path} bypass_portwell_monitor_v2.sh ${scripts_target}bypass_portwell_monitor_v2.sh
+
+
+  cp ${deploy_bypass_path}bypass_portwell_monitor.py ${scripts_target}bypass_portwell_monitor.py
+  checkaftercmd $? ${deploy_bypass_path} bypass_portwell_monitor.py ${scripts_target}bypass_portwell_monitor.py
+
   cp ${deploy_config_path}deployconfig.txt ${scripts_target}deployconfig.txt
-  if [ $? -eq 0 ]; then
-    log_info_and_echo "# ${deploy_bypass_path}bypass_portwell_monitor.sh is coping in ${scripts_target}bypass_portwell_monitor.sh"
-    log_info_and_echo "# ${deploy_bypass_path}bypass_portwell_monitor_v2.sh is coping in ${scripts_target}bypass_portwell_monitor_v2.sh"    
-    log_info_and_echo "# ${deploy_config_path}deployconfig.txt is coping in ${scripts_target}deployconfig.txt"
-    sleep $sleep_time
-    log_info_and_echo "...$light_green OK! $ori"
-  fi
+  checkaftercmd $? ${deploy_config_path} deployconfig.txt ${scripts_target}deployconfig.txt
 
   cp ${deploy_bypass_path}portwell_multi.service ${scripts_target}portwell_multi.service
-  if [ $? -eq 0 ]; then
-    log_info_and_echo "# ${deploy_bypass_path}portwell_multi.service is coping in ${scripts_target}portwell_multi.service"
-    sleep $sleep_time
-    log_info_and_echo "...$light_green OK! $ori"
-  fi
+  checkaftercmd $? ${deploy_bypass_path} portwell_multi.service ${scripts_target}portwell_multi.service
+
+
   cp ${deploy_bypass_path}bypass_portwell_enable.sh ${scripts_target}bypass_portwell_enable.sh
+  checkaftercmd $? ${deploy_bypass_path} bypass_portwell_enable.sh ${scripts_target}bypass_portwell_enable.sh
+  
   cp ${deploy_bypass_path}enable_bypass.sh ${scripts_target}enable_bypass.sh
+  checkaftercmd $? ${deploy_bypass_path} enable_bypass.sh ${scripts_target}enable_bypass.sh
+
   cp ${deploy_bypass_path}disable_bypass.sh ${scripts_target}disable_bypass.sh
-  if [ $? -eq 0 ]; then
-    log_info_and_echo "# ${deploy_bypass_path}bypass_portwell_enable.sh is coping in ${scripts_target}bypass_portwell_enable.sh"
-    log_info_and_echo "# ${deploy_bypass_path}enable_bypass.sh is coping in ${scripts_target}enable_bypass.sh"
-    log_info_and_echo "# ${deploy_bypass_path}disable_bypass.sh is coping in ${scripts_target}disable_bypass.sh"
-    sleep $sleep_time
-    log_info_and_echo "...$light_green OK! $ori"
-  fi
+  checkaftercmd $? ${deploy_bypass_path} disable_bypass.sh ${scripts_target}disable_bypass.sh
+
   cp ${deploy_threadmonitor_path}thread_monitor.py ${threadmonitor_target}thread_monitor.py
+  checkaftercmd $? ${deploy_threadmonitor_path} thread_monitor.sh ${threadmonitor_target}thread_monitor.sh
+
   cp ${deploy_threadmonitor_path}thread_monitor_v2.py ${threadmonitor_target}thread_monitor_v2.py
-  if [ $? -eq 0 ]; then
-    log_info_and_echo "# ${deploy_threadmonitor_path}thread_monitor.sh is coping in ${threadmonitor_target}thread_monitor.sh"
-    sleep $sleep_time
-    log_info_and_echo "...$light_green OK! $ori"
-  fi
+  checkaftercmd $? ${deploy_threadmonitor_path} thread_monitor_v2.sh ${threadmonitor_target}thread_monitor_v2.sh
 
   cp -R ${deploy_report_path} ${report_target}
-  if [ $? -eq 0 ]; then
-    log_info_and_echo "# ${deploy_report_path} is coping in ${report_target}"
-    sleep $sleep_time
-    log_info_and_echo "...$light_green OK! $ori"
-  fi
+  checkaftercmd $? ${deploy_report_path} " " ${report_target}
+
+
+  cp ${pmbus_path}caswell_drv_pmbus-V1.19.0.zip ${scripts_target}
+  checkaftercmd $? ${pmbus_path} caswell_drv_pmbus-V1.19.0.zip ${scripts_target}
+
+
+  cp ${lmsensor_path}bison-3.4.1.tar.gz ${scripts_target}
+  checkaftercmd $? ${lmsensor_path} bison-3.4.1.tar.gz ${scripts_target}
+
+
+  cp ${lmsensor_path}flex-2.6.3.tar.gz ${scripts_target}
+  checkaftercmd $? ${lmsensor_path} flex-2.6.3.tar.gz ${scripts_target}
+
+  cp ${lmsensor_path}lm-sensors-3-5-0.zip ${scripts_target}
+  checkaftercmd $? ${lmsensor_path} lm-sensors-3-5-0.zip ${scripts_target}
+
+
+  cp ${lcd_path}build/lcdd.service ${scripts_target}
+  checkaftercmd $? ${lcd_path}build/ lcdd.service ${scripts_target}
+
 }
 
 function installBypassDrv()
@@ -133,10 +158,10 @@ function installBypassDrv()
 
 function changeReportConfig()
 {
-  id=$(cat deployconfig.txt |egrep "^#" -v |grep id |awk -F: '{print  $2}' |sed  -e 's/\^M//' |sed -e 's/\([a-zA-Z]*\)/"\1"/')
-  passwd=$(cat deployconfig.txt |egrep "^#" -v |grep password |awk -F: '{print  $2}' |sed  -e 's/\^M//' |sed -e 's/\([A-Za-Z0-9!#@$%^&]*\)/"\1"/')
-  ip=\"http://$(cat deployconfig.txt |egrep "^#" -v |grep ip |awk -F: '{print  $2}' |sed  -e 's/\^M//'):\"
-  cat <<< $( ./jq '(.config.common.id = '$id' | .config.common.passwd = '$passwd' | .config.common.ip = '$ip' )' $report_config_path ) > $report_config_target
+  id=$(cat ${deploy_config_path}deployconfig.txt |egrep "^#" -v |grep id |awk -F: '{print  $2}' |sed  -e 's/\^M//' |sed -e 's/\([a-zA-Z]*\)/"\1"/')
+  passwd=$(cat ${deploy_config_path}deployconfig.txt |egrep "^#" -v |grep password |awk -F: '{print  $2}' |sed  -e 's/\^M//' |sed -e 's/\([A-Za-Z0-9!#@$%^&]*\)/"\1"/')
+  ip=\"http://$(cat ${deploy_config_path}deployconfig.txt |egrep "^#" -v |grep ip |awk -F: '{print  $2}' |sed  -e 's/\^M//'):\"
+  cat <<< $( ${jq_path}jq '(.config.common.id = '$id' | .config.common.passwd = '$passwd' | .config.common.ip = '$ip' )' $report_config_path ) > $report_config_target
   if [ $? -eq 0 ]; then
     log_info_and_echo "# change report config done!"
     sleep $sleep_time
@@ -162,9 +187,16 @@ function restartApache()
 function add_serial_console()
 {
   is_console=$(cat /etc/default/grub |grep GRUB_CMDLINE_LINUX= |grep console=tty1 -o)
+  is_terminal=$(cat /etc/default/grub |grep "console serial")
+  is_serial_cmd=$(cat /etc/default/grub |grep "serial --speed=115200")
 
+  if [ -z "$is_serial_cmd" ]; then
   sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\"$\)/\1\nGRUB_SERIAL_COMMAND=\"serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1\"/' /etc/default/grub
+  fi
+
+  if [ -z "$is_terminal" ]; then
   sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\"$\)/\1\nGRUB_TERMINAL=\"console serial\"/' /etc/default/grub
+  fi
 
   if [ -z "$is_console" ]; then
     sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\)/\1 console=tty1 console=ttyS0,115200/' /etc/default/grub
@@ -189,6 +221,7 @@ function set_crontab()
   echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4400) \n    \" > /opt/stm/target/restful_call_home.py)" >> file
   echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4800) \n    \" > /opt/stm/target/python/auto_upgrade.py)" >> file
   echo "@reboot (sleep 120 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.sh & > /dev/null 2>&1)" >> file
+  echo "#@reboot (sleep 120 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.py & > /dev/null 2>&1)" >> file
   echo "@reboot (sleep 60 ;  sudo iptables -I  INPUT -p tcp -m multiport --destination-ports 22,5000 -j ACCEPT > /dev/null 2>&1)" >> file
   echo "@reboot (sleep 180 ; cp -r /home/saisei/deployscripts/report/stm.conf /etc/apache2/sites-available/ > /dev/null 2>&1)" >> file
   echo "@reboot (sleep 200 ; sudo service apache2 restart > /dev/null 2>&1)" >> file
@@ -232,6 +265,37 @@ function namingMgmt()
   fi
 }
 
+function install_pmbus_drv()
+{
+  ${pmbus_path}install_pmbus.sh
+  cas_pmb_ctrl --help
+}
+
+function install_lmsensors()
+{
+  ${lmsensor_path}install_lmsensors.sh
+  sensors
+}
+
+function install_lcd()
+{
+  cp ${lcd_path}build/lcdd /usr/sbin/
+  checkaftercmd $? ${lcd_path}build/ lcdd /usr/sbin/
+
+  cp ${scripts_target}lcdd.service /lib/systemd/system/
+  checkaftercmd $? ${lcd_path}build/ lcdd.service /lib/systemd/system/
+
+  sudo systemctl enable lcdd.service
+  if [ $? -eq 0 ]; then
+    log_info_and_echo "# Enabling lcdd.service ..."
+    sleep $sleep_time
+    log_info_and_echo "$light_green ...OK! $ori"
+  else
+    log_info_and_echo "$light_red ...ERROR! check plz. $ori"
+  fi
+}
+
+
 #
 find ./ -name "*.sh" |xargs chmod 755
 find ./ -name "*.py" |xargs chmod 755
@@ -246,6 +310,9 @@ if [ $platform == "Desktop" ]; then
   restartApache
   add_serial_console
   set_crontab
+  install_pmbus_drv
+  install_lmsensors
+  install_lcd
   # namingMgmt
 else
   cpFilesToTarget
