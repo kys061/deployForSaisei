@@ -1,19 +1,16 @@
-SAISEI APPLIANCE DEPLOY GUIDE
-------------------------------------------------------
+SAISEI APPLIANCE DEPLOY FILES
+======================
+This is for saisei equipment to operate various things of saisei
 
-#####################################
-# Copyright (c) 2017 Saise          #
-# Last Date : 2017.07.21            #
-# Writer : yskang(kys061@gmail.com) #
-#####################################
+## How to use
+#### 1. build using build.sh
+#### 2. copy deployscripts{date}.tgz to equipment
+#### 3. apply deployscripts in equipment
+----------------------
 
-------------------------------------------------------
+```
+1. Last Date : 2021.4.8
+2. Writer : yskang(kys061@gmail.com) 
+-------------
+```
 
-1. If you want to register internal addresses of your site in user listener and flow recorder, INTERNAL file is specified in internal IP address(ef. 192.168.10.0/24)
-
-2. Have to start deploy.sh as root.
-
-3. Have to start config script what you want.
-
-4. Reboot
-------------------------------------------------------
