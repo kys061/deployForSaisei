@@ -1,0 +1,10 @@
+/* Configurations of CAR4040 */
+
+SLOT_A 00/00.0 00/1b.4 00/1d.0
+SLOT_B 00/00.0 00/1c.0 00/1c.4
+SLOT_C 00/00.0 00/01.1 00/01.2
+SLOT_D 00/00.0 00/01.0
+
+ON_BOARD 00/1b.0 00/1b.2 // Slot (On-board) root port
+
+ORDER ON_BOARD SLOT_A SLOT_B SLOT_C SLOT_D

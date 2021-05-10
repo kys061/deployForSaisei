@@ -1,0 +1,13 @@
+/* Configurations of CAR5050 */
+
+SLOT_A 00/00.0 17/00.0         // for SlotA root port
+SLOT_B 00/00.0 17/02.0 17/03.0 // for SlotB root port
+SLOT_C 00/00.0 3a/02.0 3a/03.0 // for SlotC root port
+SLOT_D 00/00.0 5d/02.0 5d/03.0 // for SlotD root port
+SLOT_E 00/00.0 85/02.0 85/03.0 // for SlotE root port
+SLOT_F 00/00.0 ae/02.0 ae/03.0 // for SlotF root port
+SLOT_G 00/00.0 d7/02.0 d7/03.0 // for SlotG root port
+
+ON_BOARD 00/1c.4 00/1c.5 // Slot (On-board) root port
+
+ORDER ON_BOARD SLOT_A SLOT_B SLOT_C SLOT_D SLOT_E SLOT_F SLOT_G

@@ -8,6 +8,7 @@
 # Must be run as root.
 #
 killall -9 bypass_portwell_monitor.sh >>/var/log/stm_bypass.log 2>&1
+scripts_path="/etc/stmfiles/files/scripts/"
 
 fiber_segment1_in_use=$(cat /etc/stmfiles/files/scripts/deployconfig.txt |egrep "^#" -v |grep segment1 |awk -F: '{print  $2}')
 fiber_segment2_in_use=$(cat /etc/stmfiles/files/scripts/deployconfig.txt |egrep "^#" -v |grep segment2 |awk -F: '{print  $2}')

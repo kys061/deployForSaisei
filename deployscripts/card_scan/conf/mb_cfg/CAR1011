@@ -1,0 +1,5 @@
+/* Configurations of CAR1011 */
+
+ON_BOARD 00/1c.0 00/1c.1 00/1c.2 00/1c.3 // Slot (On-board) root port
+
+ORDER ON_BOARD

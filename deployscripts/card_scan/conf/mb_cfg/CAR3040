@@ -1,0 +1,7 @@
+/* Configurations of CAR3040 */
+
+SLOT_A 00/00.0 00/01.0 // for SlotA port 1
+
+ON_BOARD 00/1c.0 00/1c.1 00/1c.2 00/1c.3 00/1c.4 00/1c.5 00/1c.6 00/1c.7 // Slot (On-board) root port
+
+ORDER ON_BOARD SLOT_A

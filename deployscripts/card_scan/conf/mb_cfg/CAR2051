@@ -1,0 +1,7 @@
+/* Configurations of CAR2051 */
+
+SLOT_A 00/00.0 00/04.0 // for SlotA port 1
+
+ON_BOARD 00/14.0 00/14.1 00/14.2 00/14.3 01/00.00 02/00.0 00/03.0 // Slot (On-board) root port
+
+ORDER ON_BOARD SLOT_A

@@ -21,6 +21,49 @@ function enable_bypass(){
     echo 1 > bpe    
     echo "forcing bypass cooper bump2" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
   fi
+  if [ -d /sys/class/bypass/g3bp2 ]; then
+    cd /sys/class/bypass/g3bp2
+    echo b > bypass
+    echo 1 > nextboot
+    echo 1 > bpe    
+    echo "forcing bypass cooper bump3" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+  fi
+  if [ -d /sys/class/bypass/g3bp3 ]; then
+    cd /sys/class/bypass/g3bp3
+    echo b > bypass
+    echo 1 > nextboot
+    echo 1 > bpe    
+    echo "forcing bypass cooper bump4" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+  fi
+  if [ -d /sys/class/bypass/g3bp4 ]; then
+    cd /sys/class/bypass/g3bp4
+    echo b > bypass
+    echo 1 > nextboot
+    echo 1 > bpe    
+    echo "forcing bypass cooper bump5" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+  fi
+  if [ -d /sys/class/bypass/g3bp5 ]; then
+    cd /sys/class/bypass/g3bp5
+    echo b > bypass
+    echo 1 > nextboot
+    echo 1 > bpe    
+    echo "forcing bypass cooper bump6" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+  fi
+  if [ -d /sys/class/bypass/g3bp6 ]; then
+    cd /sys/class/bypass/g3bp6
+    echo b > bypass
+    echo 1 > nextboot
+    echo 1 > bpe    
+    echo "forcing bypass cooper bump7" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+  fi
+  if [ -d /sys/class/bypass/g3bp7 ]; then
+    cd /sys/class/bypass/g3bp7
+    echo b > bypass
+    echo 1 > nextboot
+    echo 1 > bpe    
+    echo "forcing bypass cooper bump8" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+  fi
+
   # fiber
   if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass0 ]; then
     cd /sys/class/misc/caswell_bpgen2/slot0/
@@ -38,37 +81,37 @@ function enable_bypass(){
     cd /sys/class/misc/caswell_bpgen2/slot1/
     echo 2 > bypass0
     echo 1 > nextboot0
-    echo "forcing bypass fiber bump1" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+    echo "forcing bypass fiber bump3" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
   fi
   if [ -e /sys/class/misc/caswell_bpgen2/slot1/bypass1 ]; then
     cd /sys/class/misc/caswell_bpgen2/slot1/
     echo 2 > bypass1
     echo 1 > nextboot1
-    echo "forcing bypass fiber bump2" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+    echo "forcing bypass fiber bump4" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
   fi
   if [ -e /sys/class/misc/caswell_bpgen2/slot2/bypass0 ]; then
     cd /sys/class/misc/caswell_bpgen2/slot2/
     echo 2 > bypass0
     echo 1 > nextboot0
-    echo "forcing bypass fiber bump1" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+    echo "forcing bypass fiber bump5" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
   fi
   if [ -e /sys/class/misc/caswell_bpgen2/slot2/bypass1 ]; then
     cd /sys/class/misc/caswell_bpgen2/slot2/
     echo 2 > bypass1
     echo 1 > nextboot1
-    echo "forcing bypass fiber bump2" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+    echo "forcing bypass fiber bump6" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
   fi
   if [ -e /sys/class/misc/caswell_bpgen2/slot3/bypass0 ]; then
     cd /sys/class/misc/caswell_bpgen2/slot3/
     echo 2 > bypass0
     echo 1 > nextboot0
-    echo "forcing bypass fiber bump1" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+    echo "forcing bypass fiber bump7" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
   fi
   if [ -e /sys/class/misc/caswell_bpgen2/slot3/bypass1 ]; then
     cd /sys/class/misc/caswell_bpgen2/slot3/
     echo 2 > bypass1
     echo 1 > nextboot1
-    echo "forcing bypass fiber bump2" | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
+    echo "forcing bypass fiber bump8 | awk '{ print strftime(), $0; fflush()  }' >> /var/log/stm_bypass.log
   fi
 }
 

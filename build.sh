@@ -1,16 +1,23 @@
 #!/bin/bash
 #####################################
-# Last Date : 2021.4.8            #
+# Last Date : 2021.4.12              #
 # Writer : yskang(kys061@gmail.com) #
 #####################################
-depolyip=10.11.0.190
+
+if [ ! -z $1 ]; then
+    depolyip=$1
+else
+    echo "Please check usage"
+    echo "usage: ./build {dst_ip_address}"
+    exit 0
+fi 
+
+version=7.3.1
 date=$(date "+%Y%m%d")
 password=FlowCommand#1
 
-tar -zcvf deployscripts${date}.tgz deployscripts/
-scp deployscripts${date}.tgz saisei@${depolyip}:/home/saisei
-# expect <<EOF 
-# expect "saisei@10.11.0.190's password: " 
-# send "FlowCommand#1\n";
-# expect eof
-# EOF
+cd /home/saisei/dev/deploy/
+
+tar -zcvf /home/saisei/dev/deploy/build/${date}-${version}-deployscripts.tgz deployscripts/
+scp /home/saisei/dev/deploy/build/${date}-${version}-deployscripts.tgz saisei@${depolyip}:/home/saisei
+~/.google-drive-upload/bin/gupload /home/saisei/dev/deploy/build/${date}-${version}-deployscripts.tgz

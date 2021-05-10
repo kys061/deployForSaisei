@@ -1,0 +1,159 @@
+----------------------------------------------------------------------------
+        CASwell Card Scanning Tool README File
+        Copyright(c) 2013 CASwell, Inc.
+----------------------------------------------------------------------------
+============================================================================
+Date: Mar 10 2017
+============================================================================
+
+[Introduction]
+    By this utility, you can scan CASwell add-on cards and print relative
+information. Also, the utility has ability to sort and rename network
+interface.
+
+[Environment]
+    1. The utility is consist of one executable binary with directory "bin/"
+       to describe PCI information of target motherboard.
+    2. Execute it in Linux 64 bits environment, OS need to install relevant
+       32 bits libraries.
+    3. O.S needs to be mounted "/proc" and "/sys".
+    4. Network driver needs to be inserted.
+
+[Building]
+    1. Make utility:
+
+    # cd caswell_util_card-scanning/src
+    # make
+
+    2. Excute utility:
+
+    # ./caswell_util_card-scanning/src/bin/card_scan
+
+[Synopsis]
+    card_scan <MODEL_NAME> [FEATURE] [VALUE]
+
+    <MODEL_NAME>
+       The support model name in SUPPORT_LIST.
+
+    [FEATURE]  [VALUE]
+       -h                       : Print command usage
+       -r                       : Rename network interface immediately
+       -C     <CONFIG_DIR_PATH> : Display information by specify configuration file path which name is <CONFIG_DIR_PATH>
+       -c     <CARD_NAME>       : Display specific information search by network card name which name is <CARD_NAME>
+       -s     <SLOT_X>          : Display specific information search by slot name which name is <SLOT_X>
+       -i     <NET_DEV>         : Display specific information search by network interface which name is <NET_DEV>
+       -m     <MAC>             : Display specific information search by MAC address which name is <MAC>
+       -o     <OUTPUT>          : Display specific information by <OUTPUT> which value follow:
+              <OUTPUT> :
+              slot     : Display all slot name
+              iface    : Display all network interface
+              card     : Display all network card name
+              mac      : Display all MAC address
+
+[Command Example]
+    1. Display all information.
+       # ./card_scan CAR3030
+         eth0          CAR3030                        ON_BOARD           00:90:FB:46:07:00
+         eth1          CAR3030                        ON_BOARD           00:90:FB:46:07:01
+         eth2          CAR3030                        ON_BOARD           00:90:FB:46:07:02
+         eth3          CAR3030                        ON_BOARD           00:90:FB:46:07:03
+         eth4          CAR3030                        ON_BOARD           00:90:FB:46:07:04
+         eth5          CAR3030                        ON_BOARD           00:90:FB:46:07:05
+         eth6          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F4
+         eth7          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F5
+         eth8          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F6
+         eth9          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F7
+
+    2. Rename network interface immediately.
+       # ./card_scan CAR3030 -r
+
+       NOTE:
+       2.1. If you want to change renaming order of network interfaces,
+            please create a order configuration as "slot_order.cfg"
+            in folder "caswell_util_card-scanning/conf/".
+
+       2.2. The order configuration file content is as below:
+            ORDER [First Slot Name] [Second Slot Name] [Thrid Slot Name]
+
+            Example:
+            ORDER SLOT_A SLOT_B ON_BOARD
+
+       2.3. If monitor shows some messages like "link is not ready",
+            please don't worry that it's normal.
+
+    3. Display information by a specific configuration file path.
+       # ./card_scan CAR3030 -C ../conf/
+
+    4. Display specific information according to different request.
+
+       4.1 Display information by network card.
+       # ./card_scan CAR3030 -c NIP/NID/NIN-51040-005
+         eth6          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F4
+         eth7          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F5
+         eth8          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F6
+         eth9          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F7
+
+       4.2 Display information by slot.
+       # ./card_scan CAR3030 -s SLOT_A
+         eth6          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F4
+         eth7          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F5
+         eth8          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F6
+         eth9          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F7
+
+       4.3 Display information by network interface.
+       # ./card_scan CAR3030 -i eth6
+         eth6          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F4
+
+       4.4 Display information by MAC address.
+       # ./card_scan CAR3030 -m 00:90:FB:31:9C:F7
+         eth9          NIP/NID/NIN-51040-005          SLOT_A             00:90:FB:31:9C:F7
+
+       4.5 Display all slot information.
+       # ./card_scan CAR3030 -o slot
+         ON_BOARD
+         SLOT_A
+
+       4.6 Display all network interface information.
+       # ./card_scan CAR3030 -o iface
+         eth0
+         eth1
+         eth2
+         eth3
+         eth4
+         eth5
+         eth6
+         eth7
+         eth8
+         eth9
+
+       4.7 Display all network card information.
+       # ./card_scan CAR3030 -o card
+         NIP/NID/NIN-51040-005
+
+       4.8 Display all MAC address.
+       # ./card_scan CAR3030 -o mac
+         00:90:FB:46:07:00
+         00:90:FB:46:07:01
+         00:90:FB:46:07:02
+         00:90:FB:46:07:03
+         00:90:FB:46:07:04
+         00:90:FB:46:07:05
+         00:90:FB:31:9C:F4
+         00:90:FB:31:9C:F5
+         00:90:FB:31:9C:F6
+         00:90:FB:31:9C:F7
+
+       NOTE:
+       That -o can be used with -i/-c/-s/-m.
+
+    5. Combine with multiple condition, that -o can be used with -i/-c/-s/-m.
+
+       5.1 Display all MAC address in add-on card NIP/NID/NIN-51040-005
+       # ./card_scan CAR3030 -c NIP/NID/NIN-51040-005 -o mac
+         00:90:FB:31:9C:F4
+         00:90:FB:31:9C:F5
+         00:90:FB:31:9C:F6
+         00:90:FB:31:9C:F7
+
+[Support list]
+    Please refer to the file 'SUPPORT_LIST'

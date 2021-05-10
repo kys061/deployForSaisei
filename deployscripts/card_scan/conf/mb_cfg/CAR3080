@@ -1,0 +1,11 @@
+/* Configurations of CAR3080 */
+
+SLOT_A 00/00.0 16/01.0 16/00.0 18/06.0 18/05.0 /* for SlotA */
+SLOT_B 00/00.0 16/03.0 16/02.0 1a/05.0 1a/06.0 /* for SlotB */
+SLOT_C 00/00.0 64/00.0 64/00.1 /* for SlotC */
+SLOT_D 00/00.0 00/1d.4 00/1b.0 07/06.0 07/05.0/* for SlotD */
+
+ON_BOARD 00/1c.3 b5/00.0 b5/00.1 b5/00.2 b5/00.3 b7/00.0 b7/00.1 b7/00.2 b7/00.3 00/1c.4
+/* PCI number "b7/xx.x" is a special case for CAR-3080 /*
+
+ORDER ON_BOARD SLOT_A SLOT_B SLOT_C SLOT_D

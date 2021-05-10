@@ -1,0 +1,7 @@
+/* Configurations of CAR2070 */
+
+SLOT_A 00/00.0 00/01.0 // for SlotA port 1
+
+ON_BOARD 00/1c.0 00/1c.5 00/1c.6 00/1c.7 00/1d.0 00/1d.1 // Slot (On-board) root port
+
+ORDER ON_BOARD SLOT_A

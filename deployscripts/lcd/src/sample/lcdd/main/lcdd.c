@@ -34,7 +34,7 @@
 #define	MSG_REBOOT			"Reboot          "
 #define	MSG_SHUTDOWN		"Shutdown        "
 
-#define	MSG_CD_STOP			"Hold ESC to stop"
+#define	MSG_CD_STOP			" "
 #define	MSG_FMT_CD_REBOOT	"Reboot in %2d s\0"
 #define	MSG_FMT_CD_SHUTDOWN	"Shutdown in %2d s\0"
 #define	MSG_REBOOTING		"Rebooting...    "
@@ -73,7 +73,7 @@ static struct menu	menus[] = {
 		.name = "Main Menu",
 		.acts = {
 			{ MSG_INIT, -1, NULL, NULL, ACT_INIT, ACT_INIT },
-			{ MSG_HOME, -1, init_home, NULL, ACT_REBOOT, ACT_SHUTDOWN },
+			{ MSG_HOME, -1, init_home, NULL, ACT_REBOOT, ACT_SHUTDOWN },	// 메시지, -1, 호출함수, 널, 다운버튼시 값, 업버튼시 값
 			{ MSG_REBOOT, -1, NULL, act_reboot, ACT_SHUTDOWN, ACT_HOME },
 			{ MSG_SHUTDOWN, -1, NULL, act_shutdown, ACT_HOME, ACT_REBOOT },
 		}
@@ -131,8 +131,9 @@ char * strdate(void)
 void init_home(int lcm)
 {
 	/* Clear first for blinking effect */
-	ShowMessage_2(lcm, LINE_BLANK);
+	// ShowMessage_2(lcm, LINE_BLANK);
 	//ShowMessage_2(lcm, strdate());
+	ShowMessage_1(lcm, MSG_HOME);
 	ShowMessage_2(lcm, MSG_HOME2);
 }
 
@@ -179,7 +180,10 @@ int main(int argc, char **argv)
 	SetDis(lcm);
 	curr_menu = MENU_MAIN;
 	curr_act = ACT_HOME;
-	ShowMessage(lcm, menus[curr_menu].acts[curr_act].msg, LINE_BLANK);
+	ShowMessage(lcm, menus[curr_menu].acts[curr_act].msg, MSG_HOME2);
+	ShowMessage_1(lcm, MSG_HOME);
+	ShowMessage_2(lcm, MSG_HOME2);
+
 
 	while (1) {
 		/* Read key pressed from LCM */
@@ -246,6 +250,7 @@ int main(int argc, char **argv)
 			// 		&& (tick % 15 == 0)) {
 			// 	init_home(lcm);
 			// }
+			// init_home(lcm);
 
 			break;
 		}

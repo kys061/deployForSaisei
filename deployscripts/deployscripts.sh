@@ -15,6 +15,7 @@ bypass7_3_fiber_driver=caswell_drv_network-bypass-V3.21.0.zip
 # bypassdrv_target=/etc/stmfiles/files/scripts/
 deploy_config_path=/home/saisei/deployscripts/
 deploy_bypass_path=/home/saisei/deployscripts/bypass/
+deploy_apache_path=/home/saisei/deployscripts/apache_monitor/
 scripts_target=/etc/stmfiles/files/scripts/
 deploy_threadmonitor_path=/home/saisei/deployscripts/thread_monitor/
 threadmonitor_target=/etc/stmfiles/files/scripts/
@@ -32,7 +33,7 @@ id="cli_admin"
 pass="cli_admin"
 
 platform=$(dmidecode -q |grep "Chassis Information" -A10 |grep Type | cut -d ":" -f2 |  tr -d ' ')
-version=$(echo 'show version' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | awk '{print $1}' | egrep 'V[0-9]+\.[0-9]+' -o)
+# version=$(echo 'show version' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost | awk '{print $1}' | egrep 'V[0-9]+\.[0-9]+' -o)
 
 red="\033[0;31m"
 green="\e[0;32m"
@@ -41,7 +42,7 @@ light_green="\e[92m"
 light_red="\e[91m"
 
 ori="\e[0m"
-sleep_time=2
+sleep_time=1
 
 function log_info()
 {
@@ -103,6 +104,18 @@ function cpFilesToTarget()
 
   cp ${deploy_bypass_path}bypass_portwell_monitor.py ${scripts_target}bypass_portwell_monitor.py
   checkaftercmd $? ${deploy_bypass_path} bypass_portwell_monitor.py ${scripts_target}bypass_portwell_monitor.py
+  
+  cp ${deploy_bypass_path}check_bypass.sh ${scripts_target}check_bypass.sh
+  checkaftercmd $? ${deploy_bypass_path} check_bypass.sh ${scripts_target}check_bypass.sh
+
+  cp ${deploy_apache_path}apache_monitor.py ${scripts_target}apache_monitor.py
+  checkaftercmd $? ${deploy_apache_path} apache_monitor.py ${scripts_target}apache_monitor.py
+
+  cp ${deploy_bypass_path}enable_bypass_for_monitor.sh ${scripts_target}enable_bypass_for_monitor.sh
+  checkaftercmd $? ${deploy_bypass_path} enable_bypass_for_monitor.sh ${scripts_target}enable_bypass_for_monitor.sh
+
+  cp ${deploy_bypass_path}disable_bypass_for_monitor.sh ${scripts_target}disable_bypass_for_monitor.sh
+  checkaftercmd $? ${deploy_bypass_path} disable_bypass_for_monitor.sh ${scripts_target}disable_bypass_for_monitor.sh
 
   cp ${deploy_config_path}deployconfig.txt ${scripts_target}deployconfig.txt
   checkaftercmd $? ${deploy_config_path} deployconfig.txt ${scripts_target}deployconfig.txt
@@ -186,20 +199,24 @@ function restartApache()
 
 function add_serial_console()
 {
-  is_console=$(cat /etc/default/grub |grep GRUB_CMDLINE_LINUX= |grep console=tty1 -o)
+  is_console=$(cat /etc/default/grub |grep GRUB_CMDLINE_LINUX= |grep console=ttyS0 -o)
   is_terminal=$(cat /etc/default/grub |grep "console serial")
   is_serial_cmd=$(cat /etc/default/grub |grep "serial --speed=115200")
 
-  if [ -z "$is_serial_cmd" ]; then
-  sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\"$\)/\1\nGRUB_SERIAL_COMMAND=\"serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1\"/' /etc/default/grub
-  fi
+  # if [ -z "$is_serial_cmd" ]; then
+  # sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\"$\)/\1\nGRUB_SERIAL_COMMAND=\"serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1\"/' /etc/default/grub
+  # fi
 
-  if [ -z "$is_terminal" ]; then
-  sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\"$\)/\1\nGRUB_TERMINAL=\"console serial\"/' /etc/default/grub
-  fi
+  # if [ -z "$is_terminal" ]; then
+  # sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\"$\)/\1\nGRUB_TERMINAL=\"console serial\"/' /etc/default/grub
+  # fi
+
+  # if [ -z "$is_console" ]; then
+  #   sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\)/\1 console=tty1 console=ttyS0,115200n8/' /etc/default/grub
+  # fi
 
   if [ -z "$is_console" ]; then
-    sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\)/\1 console=tty1 console=ttyS0,115200/' /etc/default/grub
+    sed -i 's/\(^GRUB_CMDLINE_LINUX=\"[a-zA-Z0-9_=. ]*\)/\1 console=ttyS0,115200n8/' /etc/default/grub
   fi
   
   update-grub
@@ -217,15 +234,25 @@ function set_crontab()
   crontab -l > file
   echo "15 0 1 * * find /etc/stmfiles/files/cores/* -type f,d -ctime +7 -exec rm -rf {} \;" > file
   echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(3600) \n    \" > /opt/stm/target/python/mapui.py)" >> file
-  echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4000) \n    \" > /opt/stm/target/call_home.py)" >> file
-  echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4400) \n    \" > /opt/stm/target/restful_call_home.py)" >> file
-  echo "@reboot (sleep 10 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4800) \n    \" > /opt/stm/target/python/auto_upgrade.py)" >> file
-  echo "@reboot (sleep 120 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.sh & > /dev/null 2>&1)" >> file
-  echo "#@reboot (sleep 120 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.py & > /dev/null 2>&1)" >> file
-  echo "@reboot (sleep 60 ;  sudo iptables -I  INPUT -p tcp -m multiport --destination-ports 22,5000 -j ACCEPT > /dev/null 2>&1)" >> file
-  echo "@reboot (sleep 180 ; cp -r /home/saisei/deployscripts/report/stm.conf /etc/apache2/sites-available/ > /dev/null 2>&1)" >> file
-  echo "@reboot (sleep 200 ; sudo service apache2 restart > /dev/null 2>&1)" >> file
-  echo "@reboot (sleep 240 ; sudo /etc/stmfiles/files/scripts/thread_monitor_v2.py & > /dev/null 2>&1)" >> file  
+  echo "@reboot (sleep 12 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4000) \n    \" > /opt/stm/target/call_home.py)" >> file
+  echo "@reboot (sleep 14 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4400) \n    \" > /opt/stm/target/restful_call_home.py)" >> file
+  echo "@reboot (sleep 16 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4800) \n    \" > /opt/stm/target/python/auto_upgrade.py)" >> file
+  echo "@reboot (sleep 18 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(5250) \n    \" > /opt/stm/target/python/raid.py)" >> file
+  echo "@reboot (sleep 20 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(3600) \n    \" > /opt/stm/target.alt/python/mapui.py)" >> file
+  echo "@reboot (sleep 22 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4000) \n    \" > /opt/stm/target.alt/call_home.py)" >> file
+  echo "@reboot (sleep 24 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4400) \n    \" > /opt/stm/target.alt/restful_call_home.py)" >> file
+  echo "@reboot (sleep 26 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(4800) \n    \" > /opt/stm/target.alt/python/auto_upgrade.py)" >> file
+  echo "@reboot (sleep 28 ; printf \"#\"'!""'""\"""/usr/bin/python2.7 \n\nimport time \nwhile True: \n  time.sleep(5250) \n    \" > /opt/stm/target.alt/python/raid.py)" >> file
+  echo "@reboot (sleep 90 ; sudo rm -f /etc/stm/cli/* > /dev/null 2>&1)" >> file
+  echo "#@reboot (sleep 120 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.sh & > /dev/null 2>&1)" >> file
+  echo "@reboot (sleep 120 ; sudo /etc/stmfiles/files/scripts/bypass_portwell_monitor.py & > /dev/null 2>&1)" >> file
+  echo "*/5 * * * * sudo /etc/stmfiles/files/scripts/check_bypass.sh > /dev/null 2>&1" >> file
+  echo "@reboot (sleep 130 ; sudo /etc/stmfiles/files/scripts/apache_monitor.py & > /dev/null 2>&1)" >> file
+  echo "@reboot (sleep 60 ;  sudo iptables -I  INPUT -p tcp -m multiport --destination-ports 22,5000,5029 -j ACCEPT > /dev/null 2>&1)" >> file
+  # echo "@reboot (sleep 180 ; cp -r /home/saisei/deployscripts/report/stm.conf /etc/apache2/sites-available/ > /dev/null 2>&1)" >> file
+  # echo "@reboot (sleep 200 ; sudo service apache2 restart > /dev/null 2>&1)" >> file
+  echo "#@reboot (sleep 240 ; sudo /etc/stmfiles/files/scripts/thread_monitor_v2.py & > /dev/null 2>&1)" >> file
+  echo "@reboot (sleep 200 ; sudo /home/saisei/deployscripts/pmbus/load_pmbus.sh > /dev/null 2>&1)" >> file
   crontab file
   rm file
 
@@ -244,23 +271,31 @@ function namingMgmt()
   pci_count=($(lspci -m |grep Ether |grep I2 | cut -d " " -f1))
   # test=$(/etc/stmfiles/files/scripts/dpdk_nic_bind.py -s |grep -A 3 "Network devices using kernel driver" | cut -d " " -f1 |egrep [0-9A-Za-z]+:[0-9A-Za-z]+:[0-9A-Za-z]+.[0-9A-Za-z]+)
   if [ ${#pci_count[@]} -gt 2 ]; then
-    echo "cooper interfaces are too many,, check plz.."
-    break
+    echo "cooper interfaces are too many,, check plz.."    
   else
     if [ ! -e /etc/udev/rules.d/70-persistent-net.rules ]; then
       touch /etc/udev/rules.d/70-persistent-net.rules
       # pci_address=($(lspci -m |grep Ether |grep I2 | cut -d " " -f1))
       # mac=$(cat /etc/stm/devices.csv |grep ${pci_address[$i]} |cut -d "," -f6 |tr -d '"')
       MGMTCOUNTER=0
-      for pci in $(lspci -m |grep Ether |grep I2 | cut -d " " -f1); do
+      echo "make 70-persistent-net.rules and add config in /etc/udev/rules.d/ "
+      for pci in $(lspci -m |grep Ether |egrep '[0-9A-Za-z][A-Za-z]:00' | cut -d " " -f1); do
         mac=$(cat /etc/stm/devices.csv |grep ${pci} |cut -d "," -f6 |tr -d '"')
-        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"${mac}\", NAME=\"mgmt${MGMTCOUNTER}\" is added to rules.."
+        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"${mac}\", NAME=\"mgmt${MGMTCOUNTER}\" is added to /etc/udev/rules.d/70-persistent-net.rules"
         echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"${mac}\", NAME=\"mgmt${MGMTCOUNTER}\"" >> /etc/udev/rules.d/70-persistent-net.rules
         MGMTCOUNTER=$[$MGMTCOUNTER +1]
-        if [ MGMTCOUNTER -ge 2 ]; then
+        if [ $MGMTCOUNTER -ge 2 ]; then
           break
         fi
       done
+    else
+      count=0
+      echo "plz check 70-persistent-net.rules in /etc/udev/rules.d/ like below?"
+      for pci in $(lspci -m |grep Ether |egrep '[0-9A-Za-z][A-Za-z]:00' | cut -d " " -f1); do
+        mac=$(cat /etc/stm/devices.csv |grep ${pci} |cut -d "," -f6 |tr -d '"')        
+        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"${mac}\", NAME=\"mgmt${count}\""
+        count=$[$count +1]
+    done
     fi
   fi
 }
@@ -279,8 +314,13 @@ function install_lmsensors()
 
 function install_lcd()
 {
-  cp ${lcd_path}build/lcdd /usr/sbin/
-  checkaftercmd $? ${lcd_path}build/ lcdd /usr/sbin/
+  if [ ! -e /usr/sbin/lcdd ]; then
+    cp ${lcd_path}build/lcdd /usr/sbin/
+    checkaftercmd $? ${lcd_path}build/ lcdd /usr/sbin/
+  else
+    log_info_and_echo "$light_green# already installed lcdd.. $ori"
+  fi
+
 
   cp ${scripts_target}lcdd.service /lib/systemd/system/
   checkaftercmd $? ${lcd_path}build/ lcdd.service /lib/systemd/system/
@@ -306,14 +346,14 @@ echo "=== Start deployscripts.sh ===" | awk '{ print strftime(), $0; fflush() }'
 if [ $platform == "Desktop" ]; then
   cpFilesToTarget
   installBypassDrv
-  changeReportConfig
-  restartApache
+  # changeReportConfig
+  # restartApache
   add_serial_console
   set_crontab
   install_pmbus_drv
   install_lmsensors
   install_lcd
-  # namingMgmt
+  namingMgmt
 else
   cpFilesToTarget
   changeReportConfig

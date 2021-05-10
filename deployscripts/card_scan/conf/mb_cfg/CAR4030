@@ -1,0 +1,9 @@
+/* Configurations of CAR4030 */
+
+SLOT_A 00/00.0 00/1c.0 00/1c.4 // for SlotA port 1
+SLOT_B 00/00.0 00/01.1 00/01.2 // for SlotB port 1
+SLOT_C 00/00.0 00/01.0         // for SlotC port 1
+
+ON_BOARD 00/1b.0 // Slot (On-board) root port
+
+ORDER ON_BOARD SLOT_A SLOT_B SLOT_C

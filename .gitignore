@@ -1,3 +1,9 @@
 report_v
 pmbus
 .vscode
+lcd
+deployscripts/pmbus/caswell_drv_pmbus-V1.19.0
+deployscripts/lm-sensors/bison-3.4.1
+deployscripts/lm-sensors/flex-2.6.3
+deployscripts/lm-sensors/lm-sensors-3-5-0
+pmbus/caswell_drv_pmbus-V1.19.0

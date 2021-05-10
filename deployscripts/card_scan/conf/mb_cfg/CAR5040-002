@@ -1,0 +1,11 @@
+/* Configurations of CAR5040-002 */
+
+SLOT_A 00/00.0 00/02.0 // for SlotA port 1
+SLOT_B 00/00.0 00/02.2 00/02.3 // for SlotB port 1
+SLOT_C 00/00.0 80/01.0 80/01.1 // for SlotC port 1
+SLOT_D 00/00.0 80/02.2 80/02.3 // for SlotD port 1
+SLOT_E 00/00.0 00/03.0 80/03.0 // for SlotE port 1
+
+ON_BOARD 00/1c.2 00/1c.3 // Slot (On-board) root port
+
+ORDER ON_BOARD SLOT_A SLOT_B SLOT_C SLOT_D SLOT_E
